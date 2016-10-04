@@ -18,7 +18,7 @@ plugin = QiitaPlugin(
     'deblur', '0.1.0', 'A greedy deconvolution algorithm based on Illumina '
     'Miseq/Hiseq error profiles')
 
-# Define the HUMAnN2 command
+# Define the deblur-workflow command
 req_params = {'seqs-fp': ('artifact', ['Demultiplexed'])}
 opt_params = {
     # parameters not being passed
@@ -42,7 +42,7 @@ opt_params = {
     'jobs-to-start': ['integer', '1'],
     'overwrite': ['boolean', 'True']
 }
-outputs = {'Demultiplexed': 'deblured sequences'}
+outputs = {'BIOM': 'deblured sequences'}
 dflt_param_set = {
     'Defaults': {'ref-fp': '', 'ref-db-fp': '', 'mean-error': 0.005,
                  'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '

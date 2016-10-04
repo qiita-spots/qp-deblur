@@ -16,8 +16,7 @@ from qiita_client import ArtifactInfo
 from qiita_client.util import system_call
 
 
-def generate_deblur_workflow_commands(preprocessed_fastq, out_dir, parameters,
-                                      assure_od=True):
+def generate_deblur_workflow_commands(preprocessed_fastq, out_dir, parameters):
     """Generates the deblur commands
 
     Parameters
