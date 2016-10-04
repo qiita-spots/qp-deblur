@@ -34,7 +34,7 @@ opt_params = {
     'indel-prob': ['float', '0.01'],
     'indel-max': ['integer', '3'],
     'trim-length': ['integer', '100'],
-    'min-reads': ['integer', '0'],
+    'min-reads': ['integer', '10'],
     'min-size': ['integer', '2'],
     'negate': ['boolean', 'True'],
     'threads-per-sample': ['integer', '1'],
@@ -46,7 +46,7 @@ dflt_param_set = {
                  'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                                 '0.005, 0.001, 0.001, 0.001, 0.0005'),
                  'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
-                 'min-reads': 0, 'min-size': 2, 'negate': True,
+                 'min-reads': 10, 'min-size': 2, 'negate': True,
                  'threads-per-sample': 1, 'jobs-to-start': 1}
 }
 deblur_cmd = QiitaCommand(
