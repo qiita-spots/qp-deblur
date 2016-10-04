@@ -40,7 +40,7 @@ opt_params = {
     'threads-per-sample': ['integer', '1'],
     'jobs-to-start': ['integer', '1']
 }
-outputs = {'BIOM': 'deblured sequences'}
+outputs = {'deblur table': 'BIOM', 'deblur seqs': 'FASTA'}
 dflt_param_set = {
     'Defaults': {'ref-fp': '', 'mean-error': 0.005,
                  'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
@@ -50,6 +50,6 @@ dflt_param_set = {
                  'threads-per-sample': 1, 'jobs-to-start': 1}
 }
 deblur_cmd = QiitaCommand(
-    "deblur-workflow", "debluring workflow", deblur, req_params, opt_params,
+    "deblur-workflow", "deblurring workflow", deblur, req_params, opt_params,
     outputs, dflt_param_set)
 plugin.register_command(deblur_cmd)

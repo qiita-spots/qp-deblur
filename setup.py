@@ -43,5 +43,5 @@ setup(name='qp-deblur',
       packages=['qp_deblur'],
       scripts=['scripts/configure_deblur', 'scripts/start_deblur'],
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
-      install_requires=['click >= 3.3', 'future', 'pandas >= 0.15', 'deblur'],
+      install_requires=['click >= 3.3', 'future', 'deblur'],
       classifiers=classifiers)
