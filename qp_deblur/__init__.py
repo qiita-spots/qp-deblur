@@ -27,8 +27,7 @@ opt_params = {
     # log-level
     # log-file
     # is-worker-thread
-    'ref-fp': ['choice:[""]', ''],
-    'ref-db-fp': ['choice:[""]', ''],
+    'ref-fp': ['choice:["default"]', 'default'],
     'mean-error': ['float', '0.005'],
     'error-dist': ['string', ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                               '0.005, 0.001, 0.001, 0.001, 0.0005')],
@@ -39,18 +38,16 @@ opt_params = {
     'min-size': ['integer', '2'],
     'negate': ['boolean', 'True'],
     'threads-per-sample': ['integer', '1'],
-    'jobs-to-start': ['integer', '1'],
-    'overwrite': ['boolean', 'True']
+    'jobs-to-start': ['integer', '1']
 }
 outputs = {'BIOM': 'deblured sequences'}
 dflt_param_set = {
-    'Defaults': {'ref-fp': '', 'ref-db-fp': '', 'mean-error': 0.005,
+    'Defaults': {'ref-fp': '', 'mean-error': 0.005,
                  'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                                 '0.005, 0.001, 0.001, 0.001, 0.0005'),
                  'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
                  'min-reads': 0, 'min-size': 2, 'negate': True,
-                 'threads-per-sample': 1, 'jobs-to-start': 1,
-                 'overwrite': True}
+                 'threads-per-sample': 1, 'jobs-to-start': 1}
 }
 deblur_cmd = QiitaCommand(
     "deblur-workflow", "debluring workflow", deblur, req_params, opt_params,

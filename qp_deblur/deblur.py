@@ -44,23 +44,11 @@ def generate_deblur_workflow_commands(preprocessed_fastq, out_dir, parameters):
 
     params = OrderedDict(sorted(parameters.items(), key=lambda t: t[0]))
     params = ['--%s "%s"' % (k, v) if v is not True else '--%s' % k
-              for k, v in viewitems(params) if v]
+              for k, v in viewitems(params) if v != 'default']
     cmd = 'deblur workflow --seqs-fp "%s" --output-dir "%s" %s' % (
         preprocessed_fastq[0], out_dir, ' '.join(params))
 
     return cmd
-
-
-def _run_commands(qclient, job_id, commands, msg):
-    for i, cmd in enumerate(commands):
-        qclient.update_job_step(job_id, msg % i)
-        std_out, std_err, return_value = system_call(cmd)
-        if return_value != 0:
-            error_msg = ("Error running deblur:\nStd out: %s\nStd err: %s"
-                         % (std_out, std_err))
-            return False, error_msg
-
-    return True, ""
 
 
 def deblur(qclient, job_id, parameters, out_dir):
@@ -82,6 +70,7 @@ def deblur(qclient, job_id, parameters, out_dir):
     boolean, list, str
         The results of the job
     """
+    out_dir = join(out_dir, 'deblur_out')
     # Step 1 get the rest of the information need to run deblur
     qclient.update_job_step(job_id, "Step 1 of 3: Collecting information")
     artifact_id = parameters['seqs-fp']
@@ -98,15 +87,18 @@ def deblur(qclient, job_id, parameters, out_dir):
                                             out_dir, parameters)
 
     # Step 3 execute deblur
-    msg = "Step 3 of 3: Executing deblur job (%s/1)"
-    success, msg = _run_commands(qclient, job_id, [cmd], msg)
-    if not success:
-        return False, None, msg
+    qclient.update_job_step(job_id, "Step 3 of 3: Executing deblur job")
+    std_out, std_err, return_value = system_call(cmd)
+    if return_value != 0:
+        error_msg = ("Error running deblur:\nStd out: %s\nStd err: %s"
+                     % (std_out, std_err))
+        return False, None, error_msg
 
     # Generating artifact
     pb = partial(join, out_dir)
-    filepaths = [(pb('final.biom'), 'biom'),
-                 (pb('final.seqs.fa'), 'preprocessed_fasta')]
-    ainfo = [ArtifactInfo('OTU table', 'BIOM', filepaths)]
+    fps_biom = [(pb('final.biom'), 'biom')]
+    fps_fna = [(pb('final.seqs.fa'), 'preprocessed_fasta')]
+    ainfo = [ArtifactInfo('deblur table', 'BIOM', fps_biom),
+             ArtifactInfo('deblur seqs', 'FASTA', fps_fna)]
 
     return True, ainfo, ""
