@@ -45,7 +45,7 @@ class deblurTests(PluginTestCase):
         with self.assertRaises(ValueError):
             generate_deblur_workflow_commands(
                 ['fastq/s1.fastq', 'fastq/s1.fastq'],
-                'output', self.params, assure_od=False)
+                'output', self.params)
 
     def test_generate_deblur_workflow_commands(self):
         exp = ('deblur workflow --seqs-fp "fastq/s1.fastq" '
@@ -55,7 +55,7 @@ class deblurTests(PluginTestCase):
                '--mean-error "0.005" --min-size "2" --negate --overwrite '
                '--threads-per-sample "1" --trim-length "100"')
         obs = generate_deblur_workflow_commands(
-            ['fastq/s1.fastq'], 'output', self.params, assure_od=False)
+            ['fastq/s1.fastq'], 'output', self.params)
 
         self.assertEqual(obs, exp)
 
