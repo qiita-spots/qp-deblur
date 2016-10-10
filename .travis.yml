@@ -28,7 +28,9 @@ install:
   - conda install --yes -c https://conda.anaconda.org/biocore VSEARCH MAFFT SortMeRNA
   - pip install coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
-  - travis_retry pip install .
+  # for --process-dependency-links to work we need to have the latests version of pip
+  - pip install -U pip
+  - travis_retry pip install . --process-dependency-links
 before_script:
   - source activate qiita_env
   - export MOI_CONFIG_FP=$HOME/miniconda3/envs/qiita_env/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg
@@ -37,7 +39,7 @@ script:
   - source activate env_name
   - sleep 10 # give enough time to the webserver to start
   - configure_deblur --env-script "source activate qp-deblur" --server-cert $QIITA_SERVER_CERT
-  - nosetests --with-doctest --with-coverage
+  - nosetests --with-doctest --with-coverage --cover-package=qp_deblur
   - flake8 qp_deblur setup.py scripts
 addons:
   postgresql: "9.3"
