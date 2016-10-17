@@ -16,7 +16,7 @@ install:
     'pandas>=0.18' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
   - source activate qiita_env
   - pip install sphinx sphinx-bootstrap-theme coveralls ipython[all]==2.4.1
-  - pip install https://github.com/biocore/qiita/archive/master.zip
+  - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
   - ipython profile create qiita-general --parallel
   - qiita-env start_cluster qiita-general
   - qiita-env make --no-load-ontologies
@@ -28,6 +28,7 @@ install:
   - conda install --yes -c https://conda.anaconda.org/biocore VSEARCH MAFFT SortMeRNA
   - pip install coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
+  - pip install https://github.com/qiita-spots/qiita-files/archive/master.zip
   # for --process-dependency-links to work we need to have the latests version of pip
   - pip install -U pip
   - travis_retry pip install . --process-dependency-links
