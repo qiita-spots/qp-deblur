@@ -111,6 +111,59 @@ class deblurTests(PluginTestCase):
         self.assertEqual([(join(out_dir, 'deblur_out', 'final.seqs.fa'),
                            'preprocessed_fasta')], ainfo[1].files)
 
+    def test_deblur_demux(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
+
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB7.640196': {'description': 'SKB7'},
+            'SKB8.640193': {'description': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': '16S'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_demux')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['seqs-fp'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '0.1.0', 'deblur-workflow']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+
+        self.maxDiff = None
+
+        self.assertEqual("", msg)
+        self.assertTrue(success)
+
+        # there are 2 artifacts: 0. BIOM, 1. FASTA
+        self.assertEqual("BIOM", ainfo[0].artifact_type)
+        self.assertEqual("FASTA", ainfo[1].artifact_type)
+
+        self.assertEqual([(join(out_dir, 'deblur_out', 'deblured',
+                                'final.biom'), 'biom')], ainfo[0].files)
+        self.assertEqual([(join(out_dir, 'deblur_out', 'deblured',
+                                'final.seqs.fa'), 'preprocessed_fasta')],
+                         ainfo[1].files)
 
 if __name__ == '__main__':
     main()
