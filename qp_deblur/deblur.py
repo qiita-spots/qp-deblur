@@ -128,9 +128,15 @@ def deblur(qclient, job_id, parameters, out_dir):
 
     # Generating artifact
     pb = partial(join, out_dir)
-    fps_biom = [(pb('final.biom'), 'biom')]
-    fps_fna = [(pb('final.seqs.fa'), 'preprocessed_fasta')]
-    ainfo = [ArtifactInfo('deblur table', 'BIOM', fps_biom),
-             ArtifactInfo('deblur seqs', 'FASTA', fps_fna)]
+
+    ainfo = [ArtifactInfo('deblur final table', 'BIOM',
+                          [(pb('final.biom'), 'biom')]),
+             ArtifactInfo('deblur final seqs', 'FASTA',
+                          [(pb('final.seqs.fa'), 'preprocessed_fasta')]),
+             ArtifactInfo('deblur 16S only table', 'BIOM',
+                          [(pb('final.only-16s.biom'), 'biom')]),
+             ArtifactInfo('deblur 16S only seqs', 'FASTA',
+                          [(pb('final.seqs.fa.no_artifacts'),
+                           'preprocessed_fasta')])]
 
     return True, ainfo, ""
