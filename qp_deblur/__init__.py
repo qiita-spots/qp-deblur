@@ -26,15 +26,19 @@ opt_params = {
     # keep-tmp-files
     # log-level
     # log-file
+    # overwrite
     # is-worker-thread
-    'ref-fp': ['choice:["default"]', 'default'],
+    'pos-ref-fp': ['choice:["default"]', 'default'],
+    'neg-ref-fp': ['choice:["default"]', 'default'],
+    'pos-ref-db-fp': ['choice:["default"]', 'default'],
+    'neg-ref-db-fp': ['choice:["default"]', 'default'],
     'mean-error': ['float', '0.005'],
     'error-dist': ['string', ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                               '0.005, 0.001, 0.001, 0.001, 0.0005')],
     'indel-prob': ['float', '0.01'],
     'indel-max': ['integer', '3'],
     'trim-length': ['integer', '100'],
-    'min-reads': ['integer', '10'],
+    'min-reads': ['integer', '0'],
     'min-size': ['integer', '2'],
     'negate': ['boolean', 'True'],
     'threads-per-sample': ['integer', '1'],
@@ -42,7 +46,9 @@ opt_params = {
 }
 outputs = {'deblur table': 'BIOM', 'deblur seqs': 'FASTA'}
 dflt_param_set = {
-    'Defaults': {'ref-fp': '', 'mean-error': 0.005,
+    'Defaults': {'pos-ref-fp': 'default', 'neg-ref-fp': 'default',
+                 'pos-ref-db-fp': 'default', 'neg-ref-db-fp': 'default',
+                 'mean-error': 0.005,
                  'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                                 '0.005, 0.001, 0.001, 0.001, 0.0005'),
                  'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
