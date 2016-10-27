@@ -103,23 +103,31 @@ class deblurTests(PluginTestCase):
 
         success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
 
-        self.assertEqual("", msg)
+        self.assertEqual(msg, "")
         self.assertTrue(success)
 
-        self.assertEqual("BIOM", ainfo[0].artifact_type)
-        self.assertEqual("FASTA", ainfo[1].artifact_type)
-        self.assertEqual("BIOM", ainfo[2].artifact_type)
-        self.assertEqual("FASTA", ainfo[3].artifact_type)
+        self.assertEqual(ainfo[0].artifact_type, "BIOM")
+        self.assertEqual(ainfo[1].artifact_type, "FASTA")
+        self.assertEqual(ainfo[2].artifact_type, "BIOM")
+        self.assertEqual(ainfo[3].artifact_type, "FASTA")
 
-        self.assertEqual([(join(out_dir, 'deblur_out', 'final.biom'),
-                           'biom')], ainfo[0].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'final.seqs.fa'),
-                           'preprocessed_fasta')], ainfo[1].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'final.only-16s.biom'),
-                          'biom')], ainfo[2].files)
-        self.assertEqual([(join(out_dir, 'deblur_out',
-                                'final.seqs.fa.no_artifacts'),
-                          'preprocessed_fasta')], ainfo[3].files)
+        exp_final_biom = join(out_dir, 'deblur_out', 'final.biom')
+        exp_final_seqs = join(out_dir, 'deblur_out', 'final.seqs.fa')
+        exp_final_biom_16s = join(out_dir, 'deblur_out', 'final.only-16s.biom')
+        exp_final_seqs_na = join(out_dir, 'deblur_out',
+                                 'final.seqs.fa.no_artifacts')
+
+        self.assertEqual(ainfo[0].files, [(exp_final_biom, 'biom')])
+        self.assertEqual(ainfo[1].files,
+                         [(exp_final_seqs, 'preprocessed_fasta')])
+        self.assertEqual(ainfo[2].files, [(exp_final_biom_16s, 'biom')])
+        self.assertEqual(ainfo[3].files,
+                         [(exp_final_seqs_na, 'preprocessed_fasta')])
+
+        self.assertTrue(exists(exp_final_biom))
+        self.assertTrue(exists(exp_final_seqs))
+        self.assertTrue(exists(exp_final_biom_16s))
+        self.assertTrue(exists(exp_final_seqs_na))
 
     def test_deblur_demux(self):
         # generating filepaths
