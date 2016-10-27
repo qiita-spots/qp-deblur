@@ -141,7 +141,7 @@ def deblur(qclient, job_id, parameters, out_dir):
         # Create an empty table. We need to send something to Qiita that is
         # a valid BIOM, so we are going to create an empty table
         t = Table([], [], [])
-        with biom_open(final_biom_16s, 'r+') as f:
+        with biom_open(final_biom_16s, 'w') as f:
             t.to_hdf5('qp-deblur generated', f)
 
     if not exists(final_seqs_na):
