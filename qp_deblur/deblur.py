@@ -13,6 +13,8 @@ from future.utils import viewitems
 from functools import partial
 from collections import OrderedDict
 
+from biom import Table
+from biom.util import biom_open
 from qiita_client import ArtifactInfo
 from qiita_client.util import system_call
 
@@ -129,14 +131,31 @@ def deblur(qclient, job_id, parameters, out_dir):
     # Generating artifact
     pb = partial(join, out_dir)
 
+    # Generate the filepaths
+    final_biom = pb('final.biom')
+    final_seqs = pb('final.seqs.fa')
+    final_biom_16s = pb('final.only-16s.biom')
+    final_seqs_na = pb('final.seqs.fa.no_artifacts')
+
+    if not exists(final_biom_16s):
+        # Create an empty table. We need to send something to Qiita that is
+        # a valid BIOM, so we are going to create an empty table
+        t = Table([], [], [])
+        with biom_open(final_biom_16s, 'r+') as f:
+            t.to_hdf5('qp-deblur generated', f)
+
+    if not exists(final_seqs_na):
+        # Same as before, create an empty sequence file so we can send it
+        with open(final_seqs_na, 'w') as f:
+            f.write("")
+
     ainfo = [ArtifactInfo('deblur final table', 'BIOM',
-                          [(pb('final.biom'), 'biom')]),
+                          [(final_biom, 'biom')]),
              ArtifactInfo('deblur final seqs', 'FASTA',
-                          [(pb('final.seqs.fa'), 'preprocessed_fasta')]),
+                          [(final_seqs, 'preprocessed_fasta')]),
              ArtifactInfo('deblur 16S only table', 'BIOM',
-                          [(pb('final.only-16s.biom'), 'biom')]),
+                          [(final_biom_16s, 'biom')]),
              ArtifactInfo('deblur 16S only seqs', 'FASTA',
-                          [(pb('final.seqs.fa.no_artifacts'),
-                           'preprocessed_fasta')])]
+                          [(final_seqs_na, 'preprocessed_fasta')])]
 
     return True, ainfo, ""
