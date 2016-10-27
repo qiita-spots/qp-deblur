@@ -64,6 +64,78 @@ class deblurTests(PluginTestCase):
 
         self.assertEqual(obs, exp)
 
+    def test_deblur_empty(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.fastq')
+        close(fd)
+        self._clean_up_files.append(fp)
+        with open('support_files/filtered_5_seqs.fastq', 'r') as f:
+            with open(fp, 'w') as outf:
+                for _ in range(4):
+                    outf.write(f.readline())
+                    outf.write(f.readline())
+                    outf.write(f.readline())
+                    outf.write(f.readline())
+
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB7.640196': {'description': 'SKB7'},
+            'SKB8.640193': {'description': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': '16S'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_fastq')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['seqs-fp'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '0.1.0', 'deblur-workflow']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+
+        self.assertEqual(msg, "")
+        self.assertTrue(success)
+
+        self.assertEqual(ainfo[0].artifact_type, "BIOM")
+        self.assertEqual(ainfo[1].artifact_type, "FASTA")
+        self.assertEqual(ainfo[2].artifact_type, "BIOM")
+        self.assertEqual(ainfo[3].artifact_type, "FASTA")
+
+        exp_final_biom = join(out_dir, 'deblur_out', 'final.biom')
+        exp_final_seqs = join(out_dir, 'deblur_out', 'final.seqs.fa')
+        exp_final_biom_16s = join(out_dir, 'deblur_out', 'final.only-16s.biom')
+        exp_final_seqs_na = join(out_dir, 'deblur_out',
+                                 'final.seqs.fa.no_artifacts')
+
+        self.assertEqual(ainfo[0].files, [(exp_final_biom, 'biom')])
+        self.assertEqual(ainfo[1].files,
+                         [(exp_final_seqs, 'preprocessed_fasta')])
+        self.assertEqual(ainfo[2].files, [(exp_final_biom_16s, 'biom')])
+        self.assertEqual(ainfo[3].files,
+                         [(exp_final_seqs_na, 'preprocessed_fasta')])
+
+        self.assertTrue(exists(exp_final_biom))
+        self.assertTrue(exists(exp_final_seqs))
+        self.assertTrue(exists(exp_final_biom_16s))
+        self.assertTrue(exists(exp_final_seqs_na))
+
+
     def test_deblur(self):
         # generating filepaths
         fd, fp = mkstemp(suffix='_seqs.fastq')
