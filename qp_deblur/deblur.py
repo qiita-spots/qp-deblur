@@ -142,7 +142,7 @@ def deblur(qclient, job_id, parameters, out_dir):
         # a valid BIOM, so we are going to create an empty table
         t = Table([], [], [])
         with biom_open(final_biom_16s, 'w') as f:
-            t.to_hdf5('qp-deblur generated', f)
+            t.to_hdf5(f, 'qp-deblur generated')
 
     if not exists(final_seqs_na):
         # Same as before, create an empty sequence file so we can send it
