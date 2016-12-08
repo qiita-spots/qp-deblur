@@ -46,5 +46,7 @@ setup(name='qp-deblur',
       install_requires=['click >= 3.3', 'future', 'deblur'],
       dependency_links=[
         ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
-         'egg=qiita-files-0.1.0-dev')],
+         'egg=qiita-files-0.1.0-dev'),
+        ('https://github.com/biocore/deblur/archive/master.zip#'
+         'egg=deblur-0.1.8-dev')],
       classifiers=classifiers)
