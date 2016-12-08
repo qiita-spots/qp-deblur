@@ -69,7 +69,7 @@ class deblurTests(PluginTestCase):
         fd, fp = mkstemp(suffix='_seqs.fastq')
         close(fd)
         self._clean_up_files.append(fp)
-        copyfile('support_files/filtered_5_seqs.fastq', fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
 
         # inserting new prep template
         prep_info_dict = {
