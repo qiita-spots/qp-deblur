@@ -66,7 +66,7 @@ class deblurTests(PluginTestCase):
 
     def test_deblur(self):
         # generating filepaths
-        fd, fp = mkstemp(suffix='_seqs.fastq')
+        fd, fp = mkstemp(suffix='_seqs.demux')
         close(fd)
         self._clean_up_files.append(fp)
         copyfile('support_files/filtered_5_seqs.demux', fp)
