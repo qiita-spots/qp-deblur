@@ -34,7 +34,7 @@ class deblurTests(PluginTestCase):
                            '0.005, 0.001, 0.001, 0.001, 0.0005'),
             'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
             'min-reads': 0, 'min-size': 2, 'negate': True,
-            'threads-per-sample': 1, 'jobs-to-start': 1}
+            'threads-per-sample': 1, 'jobs-to-start': 1, 'skip-trimming': True}
         self._clean_up_files = []
 
     def tearDown(self):
@@ -57,7 +57,7 @@ class deblurTests(PluginTestCase):
                '0.005, 0.005, 0.005, 0.001, 0.001, 0.001, 0.0005" '
                '--indel-max "3" --indel-prob "0.01" --jobs-to-start "1" '
                '--mean-error "0.005" --min-reads "0" --min-size "2" '
-               '--negate --threads-per-sample "1" '
+               '--negate --skip-trimming --threads-per-sample "1" '
                '--trim-length "100"')
         obs = generate_deblur_workflow_commands(
             ['fastq/s1.fastq'], 'output', self.params)
@@ -66,10 +66,10 @@ class deblurTests(PluginTestCase):
 
     def test_deblur(self):
         # generating filepaths
-        fd, fp = mkstemp(suffix='_seqs.fastq')
+        fd, fp = mkstemp(suffix='_seqs.demux')
         close(fd)
         self._clean_up_files.append(fp)
-        copyfile('support_files/filtered_5_seqs.fastq', fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
 
         # inserting new prep template
         prep_info_dict = {
