@@ -152,10 +152,10 @@ def deblur(qclient, job_id, parameters, out_dir):
     ainfo = [ArtifactInfo('deblur final table', 'BIOM',
                           [(final_biom, 'biom')]),
              ArtifactInfo('deblur final seqs', 'FASTA',
-                          [(final_seqs, 'preprocessed_fasta')]),
+                          [(final_seqs, 'raw_fasta')]),
              ArtifactInfo('deblur 16S only table', 'BIOM',
                           [(final_biom_16s, 'biom')]),
              ArtifactInfo('deblur 16S only seqs', 'FASTA',
-                          [(final_seqs_na, 'preprocessed_fasta')])]
+                          [(final_seqs_na, 'raw_fasta')])]
 
     return True, ainfo, ""
