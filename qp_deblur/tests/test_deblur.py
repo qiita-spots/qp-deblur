@@ -107,19 +107,16 @@ class deblurTests(PluginTestCase):
         self.assertTrue(success)
 
         self.assertEqual("BIOM", ainfo[0].artifact_type)
-        self.assertEqual("FASTA", ainfo[1].artifact_type)
-        self.assertEqual("BIOM", ainfo[2].artifact_type)
-        self.assertEqual("FASTA", ainfo[3].artifact_type)
+        self.assertEqual("BIOM", ainfo[1].artifact_type)
 
-        self.assertEqual([(join(out_dir, 'deblur_out', 'final.biom'),
-                           'biom')], ainfo[0].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'final.seqs.fa'),
-                           'raw_fasta')], ainfo[1].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'final.only-16s.biom'),
-                          'biom')], ainfo[2].files)
-        self.assertEqual([(join(out_dir, 'deblur_out',
-                                'final.seqs.fa.no_artifacts'),
-                          'raw_fasta')], ainfo[3].files)
+        self.assertEqual(
+            [(join(out_dir, 'deblur_out', 'final.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'final.seqs.fa'),
+              'preprocessed_fasta')], ainfo[0].files)
+        self.assertEqual(
+            [(join(out_dir, 'deblur_out', 'final.only-16s.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'final.seqs.fa.no_artifacts'),
+              'preprocessed_fasta')], ainfo[1].files)
 
     def test_deblur_demux(self):
         # generating filepaths
@@ -164,22 +161,18 @@ class deblurTests(PluginTestCase):
         self.assertTrue(success)
 
         self.assertEqual("BIOM", ainfo[0].artifact_type)
-        self.assertEqual("FASTA", ainfo[1].artifact_type)
-        self.assertEqual("BIOM", ainfo[2].artifact_type)
-        self.assertEqual("FASTA", ainfo[3].artifact_type)
+        self.assertEqual("BIOM", ainfo[1].artifact_type)
 
-        self.assertEqual([(join(out_dir, 'deblur_out', 'deblured',
-                                'final.biom'),
-                           'biom')], ainfo[0].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'deblured',
-                                'final.seqs.fa'),
-                           'raw_fasta')], ainfo[1].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'deblured',
-                                'final.only-16s.biom'),
-                          'biom')], ainfo[2].files)
-        self.assertEqual([(join(out_dir, 'deblur_out', 'deblured',
-                                'final.seqs.fa.no_artifacts'),
-                          'raw_fasta')], ainfo[3].files)
+        self.assertEqual(
+            [(join(out_dir, 'deblur_out', 'deblured', 'final.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'deblured', 'final.seqs.fa'),
+              'preprocessed_fasta')], ainfo[0].files)
+        self.assertEqual(
+            [(join(out_dir, 'deblur_out', 'deblured', 'final.only-16s.biom'),
+              'biom'),
+             (join(out_dir, 'deblur_out', 'deblured',
+                   'final.seqs.fa.no_artifacts'),
+              'preprocessed_fasta')], ainfo[1].files)
 
 if __name__ == '__main__':
     main()
