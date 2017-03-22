@@ -33,8 +33,8 @@ class deblurTests(PluginTestCase):
             'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                            '0.005, 0.001, 0.001, 0.001, 0.0005'),
             'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
-            'min-reads': 0, 'min-size': 2, 'negate': True,
-            'threads-per-sample': 1, 'jobs-to-start': 1, 'skip-trimming': True}
+            'min-reads': 0, 'min-size': 2,
+            'threads-per-sample': 1, 'jobs-to-start': 1}
         self._clean_up_files = []
 
     def tearDown(self):
@@ -57,7 +57,7 @@ class deblurTests(PluginTestCase):
                '0.005, 0.005, 0.005, 0.001, 0.001, 0.001, 0.0005" '
                '--indel-max "3" --indel-prob "0.01" --jobs-to-start "1" '
                '--mean-error "0.005" --min-reads "0" --min-size "2" '
-               '--negate --skip-trimming --threads-per-sample "1" '
+               '--threads-per-sample "1" '
                '--trim-length "100"')
         obs = generate_deblur_workflow_commands(
             ['fastq/s1.fastq'], 'output', self.params)
@@ -110,12 +110,12 @@ class deblurTests(PluginTestCase):
         self.assertEqual("BIOM", ainfo[1].artifact_type)
 
         self.assertEqual(
-            [(join(out_dir, 'deblur_out', 'final.biom'), 'biom'),
-             (join(out_dir, 'deblur_out', 'final.seqs.fa'),
+            [(join(out_dir, 'deblur_out', 'all.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'all.seqs.fa'),
               'preprocessed_fasta')], ainfo[0].files)
         self.assertEqual(
-            [(join(out_dir, 'deblur_out', 'final.only-16s.biom'), 'biom'),
-             (join(out_dir, 'deblur_out', 'final.seqs.fa.no_artifacts'),
+            [(join(out_dir, 'deblur_out', 'reference-hit.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'reference-hit.seqs.fa'),
               'preprocessed_fasta')], ainfo[1].files)
 
     def test_deblur_demux(self):
@@ -164,14 +164,14 @@ class deblurTests(PluginTestCase):
         self.assertEqual("BIOM", ainfo[1].artifact_type)
 
         self.assertEqual(
-            [(join(out_dir, 'deblur_out', 'deblured', 'final.biom'), 'biom'),
-             (join(out_dir, 'deblur_out', 'deblured', 'final.seqs.fa'),
+            [(join(out_dir, 'deblur_out', 'deblured', 'all.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'deblured', 'all.seqs.fa'),
               'preprocessed_fasta')], ainfo[0].files)
         self.assertEqual(
-            [(join(out_dir, 'deblur_out', 'deblured', 'final.only-16s.biom'),
+            [(join(out_dir, 'deblur_out', 'deblured', 'reference-hit.biom'),
               'biom'),
              (join(out_dir, 'deblur_out', 'deblured',
-                   'final.seqs.fa.no_artifacts'),
+                   'reference-hit.seqs.fa'),
               'preprocessed_fasta')], ainfo[1].files)
 
 if __name__ == '__main__':
