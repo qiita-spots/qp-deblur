@@ -174,5 +174,6 @@ class deblurTests(PluginTestCase):
                    'reference-hit.seqs.fa'),
               'preprocessed_fasta')], ainfo[1].files)
 
+
 if __name__ == '__main__':
     main()
