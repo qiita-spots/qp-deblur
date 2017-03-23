@@ -37,11 +37,9 @@ opt_params = {
                               '0.005, 0.001, 0.001, 0.001, 0.0005')],
     'indel-prob': ['float', '0.01'],
     'indel-max': ['integer', '3'],
-    'skip-trimming': ['boolean', 'True'],
-    'trim-length': ['integer', '100'],
+    'trim-length': ['integer', '-1'],  # skip trimming
     'min-reads': ['integer', '0'],
     'min-size': ['integer', '2'],
-    'negate': ['boolean', 'True'],
     'threads-per-sample': ['integer', '1'],
     'jobs-to-start': ['integer', '1']
 }
@@ -55,10 +53,13 @@ dflt_param_set = {
                  'mean-error': 0.005,
                  'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
                                 '0.005, 0.001, 0.001, 0.001, 0.0005'),
-                 'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
-                 'min-reads': 10, 'min-size': 2, 'negate': True,
-                 'threads-per-sample': 1, 'jobs-to-start': 1,
-                 'skip-trimming': True}
+                 'indel-prob': 0.01, 'indel-max': 3, 'trim-length': -1,
+                 # the default min-reads is 10, however to ensure that deblur
+                 # is actually per-sample, min-reads must be set to 0 otherwise
+                 # filtering is applied over the samples included in a single
+                 # run
+                 'min-reads': 0, 'min-size': 2,
+                 'threads-per-sample': 1, 'jobs-to-start': 1}
 }
 deblur_cmd = QiitaCommand(
     "deblur-workflow", "deblurring workflow", deblur, req_params, opt_params,
