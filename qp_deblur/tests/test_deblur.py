@@ -93,7 +93,7 @@ class deblurTests(PluginTestCase):
         self.params['seqs-fp'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '0.1.0', 'deblur-workflow']),
+                'command': dumps(['deblur', '1.0.2', 'deblur-workflow']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -147,7 +147,7 @@ class deblurTests(PluginTestCase):
         self.params['seqs-fp'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '0.1.0', 'deblur-workflow']),
+                'command': dumps(['deblur', '1.0.2', 'deblur-workflow']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
