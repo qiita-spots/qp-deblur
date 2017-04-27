@@ -44,7 +44,7 @@ opt_params = {
     'jobs-to-start': ['integer', '1']
 }
 outputs = {'deblur final table': 'BIOM',
-           'deblur 16S only table': 'BIOM'}
+           'deblur reference hit table': 'BIOM'}
 dflt_param_set = {
     'Defaults': {'pos-ref-fp': 'default', 'neg-ref-fp': 'default',
                  'pos-ref-db-fp': 'default', 'neg-ref-db-fp': 'default',
