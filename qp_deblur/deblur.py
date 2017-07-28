@@ -104,7 +104,7 @@ def deblur(qclient, job_id, parameters, out_dir):
             mkdir(split_out_dir)
 
         # using the same number of parallel jobs as defined by the command
-        n_jobs = parameters['jobs-to-start']
+        n_jobs = int(parameters['jobs-to-start'])
         # [0] cause there should be only 1 file
         to_per_sample_files(fps['preprocessed_demux'][0],
                             out_dir=split_out_dir, n_jobs=n_jobs)
