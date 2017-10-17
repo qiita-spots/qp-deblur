@@ -43,7 +43,7 @@ setup(name='qp-deblur',
       packages=['qp_deblur'],
       scripts=['scripts/configure_deblur', 'scripts/start_deblur'],
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
-      install_requires=['click >= 3.3', 'future', 'deblur >= 1.0.3'],
+      install_requires=['click >= 3.3', 'future', 'deblur'],
       dependency_links=[
         ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
          'egg=qiita-files-0.1.0-dev')],
