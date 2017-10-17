@@ -24,8 +24,8 @@ install:
   - qiita-env make --no-load-ontologies
   - source deactivate
   # installing this plugin
-  - conda create --yes -n deblur python=$PYTHON_VERSION numpy
-  - source activate deblur
+  - conda create --yes -n deblur-1.0.3 python=$PYTHON_VERSION numpy flake8
+  - source activate deblur-1.0.3
   - conda install --yes -c bioconda -c biocore VSEARCH MAFFT=7.310 biom-format SortMeRNA==2.0
   - pip install https://github.com/biocore/deblur/archive/master.zip
   - pip install coveralls
@@ -38,9 +38,9 @@ before_script:
   - source activate qiita
   - qiita pet webserver start &
 script:
-  - source activate deblur
+  - source activate deblur-1.0.3
   - sleep 10 # give enough time to the webserver to start
-  - configure_deblur --env-script "source activate deblur" --server-cert $QIITA_SERVER_CERT
+  - configure_deblur --env-script "source activate deblur-1.0.3" --server-cert $QIITA_SERVER_CERT
   - nosetests --with-doctest --with-coverage --cover-package=qp_deblur
   - flake8 qp_deblur setup.py scripts
 addons:
