@@ -21,6 +21,22 @@ from qiita_client.util import system_call
 from qiita_files.demux import to_per_sample_files
 
 
+DEBLUR_PARAMS = {
+    'Positive filtering database': 'pos-ref-fp',
+    'Negative filtering database': 'neg-ref-fp',
+    'Indexed positive filtering database': 'pos-ref-db-fp',
+    'Indexed negative filtering database': 'neg-ref-db-fp',
+    'Mean per nucleotide error rate': 'mean-error',
+    'Error probabilities for each Hamming distance': 'error-dist',
+    'Insertion/deletion (indel) probability': 'indel-prob',
+    'Maximum number of insertion/deletion (indel)': 'indel-max',
+    'Sequence trim length (-1 for no trimming)': 'trim-length',
+    'Minimum dataset-wide read threshold': 'min-reads',
+    'Minimum per-sample read threshold': 'min-size',
+    'Threads per sample': 'threads-per-sample',
+    'Jobs to start': 'jobs-to-start'}
+
+
 def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     """Generates the deblur commands
 
@@ -47,7 +63,8 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
         raise ValueError("deblur doesn't accept more than one filepath: "
                          "%s" % ', '.join(preprocessed_fp))
 
-    params = OrderedDict(sorted(parameters.items(), key=lambda t: t[0]))
+    translated_params = {DEBLUR_PARAMS[k]: v for k, v in parameters.items()}
+    params = OrderedDict(sorted(translated_params.items(), key=lambda t: t[0]))
     params = ['--%s "%s"' % (k, v) if v is not True else '--%s' % k
               for k, v in viewitems(params) if v != 'default']
     cmd = 'deblur workflow --seqs-fp "%s" --output-dir "%s" %s' % (
@@ -84,9 +101,9 @@ def deblur(qclient, job_id, parameters, out_dir):
     out_dir = join(out_dir, 'deblur_out')
     # Step 1 get the rest of the information need to run deblur
     qclient.update_job_step(job_id, "Step 1 of 3: Collecting information")
-    artifact_id = parameters['seqs-fp']
+    artifact_id = parameters['Demultiplexed sequences']
     # removing input from parameters so it's not part of the final command
-    del parameters['seqs-fp']
+    del parameters['Demultiplexed sequences']
 
     # Get the artifact filepath information
     artifact_info = qclient.get("/qiita_db/artifacts/%s/" % artifact_id)
@@ -104,7 +121,7 @@ def deblur(qclient, job_id, parameters, out_dir):
             mkdir(split_out_dir)
 
         # using the same number of parallel jobs as defined by the command
-        n_jobs = int(parameters['jobs-to-start'])
+        n_jobs = int(parameters['Jobs to start'])
         # [0] cause there should be only 1 file
         to_per_sample_files(fps['preprocessed_demux'][0],
                             out_dir=split_out_dir, n_jobs=n_jobs)

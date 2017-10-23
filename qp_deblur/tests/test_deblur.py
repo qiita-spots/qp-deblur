@@ -28,13 +28,18 @@ class deblurTests(PluginTestCase):
 
         plugin("https://localhost:21174", 'register', 'ignored')
         self.params = {
-            'pos-ref-fp': 'default', 'neg-ref-fp': 'default',
-            'mean-error': 0.005,
-            'error-dist': ('1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
-                           '0.005, 0.001, 0.001, 0.001, 0.0005'),
-            'indel-prob': 0.01, 'indel-max': 3, 'trim-length': 100,
-            'min-reads': 0, 'min-size': 2,
-            'threads-per-sample': 1, 'jobs-to-start': 1}
+            'Positive filtering database': 'default',
+            'Negative filtering database': 'default',
+            'Mean per nucleotide error rate': 0.005,
+            'Error probabilities for each Hamming distance': (
+                '1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
+                '0.005, 0.001, 0.001, 0.001, 0.0005'),
+            'Insertion/deletion (indel) probability': 0.01,
+            'Maximum number of insertion/deletion (indel)': 3,
+            'Sequence trim length (-1 for no trimming)': 100,
+            'Minimum dataset-wide read threshold': 0,
+            'Minimum per-sample read threshold': 2,
+            'Threads per sample': 1, 'Jobs to start': 1}
         self._clean_up_files = []
 
     def tearDown(self):
@@ -90,10 +95,10 @@ class deblurTests(PluginTestCase):
             'prep': pid}
         aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
 
-        self.params['seqs-fp'] = aid
+        self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.0.3', 'deblur-workflow']),
+                'command': dumps(['deblur', '1.0.3', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -144,10 +149,10 @@ class deblurTests(PluginTestCase):
             'prep': pid}
         aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
 
-        self.params['seqs-fp'] = aid
+        self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.0.3', 'deblur-workflow']),
+                'command': dumps(['deblur', '1.0.3', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
