@@ -35,7 +35,7 @@ BEGIN
             WHERE artifact_id = a_info.artifact_id;
 
     END LOOP;
-END $do$
+END $do$;
 
 -- after initial deploy we realized that we need to make sure that all
 -- pos-ref-db-fp  /databases/gg/13_8/sortmerna/88_otus
@@ -88,4 +88,4 @@ BEGIN
                         '"Positive filtering database": "/databases/gg/13_8/rep_set/88_otus.fasta", "Maximum number of insertion/deletion (indel)": 3, ' ||
                         '"Minimum dataset-wide read threshold": 0, "Minimum per-sample read threshold": 2}')::json
         WHERE command_id = deblur_id;
-END $do$
+END $do$;
