@@ -16,7 +16,7 @@ BEGIN
     SELECT command_id INTO new_deblur_id
         FROM qiita.software_command sc
             JOIN qiita.software s USING (software_id)
-        WHERE s.name = 'deblur' AND s.version = '1.0.3' AND sc.name = 'deblur-workflow';
+        WHERE s.name = 'deblur' AND s.version = '1.0.3' AND sc.name = 'Deblur';
 
     FOR a_info IN
         SELECT * FROM qiita.artifact WHERE command_id = old_deblur_id
@@ -51,7 +51,7 @@ BEGIN
     SELECT command_id INTO deblur_id
         FROM qiita.software_command sc
             JOIN qiita.software s USING (software_id)
-        WHERE s.name = 'deblur' AND s.version = '1.0.3' AND sc.name = 'Deblur';
+        WHERE s.name = 'deblur' AND s.version = '1.0.3' AND sc.name = 'deblur-workflow';
 
     FOR a_info IN
         SELECT * FROM qiita.artifact WHERE command_id = deblur_id
