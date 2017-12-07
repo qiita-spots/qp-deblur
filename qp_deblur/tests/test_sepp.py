@@ -22,14 +22,18 @@ class seppNativeTests(TestCase):
         self.maxDiff = None
 
     def tearDown(self):
-        remove("%s_placement.json" % TESTPREFIX)
-        remove("%s_placement.tog.relabelled.tre" % TESTPREFIX)
-        remove("%s_placement.tog.relabelled.xml" % TESTPREFIX)
-        remove("%s_placement.tog.tre" % TESTPREFIX)
-        remove("%s_placement.tog.xml" % TESTPREFIX)
-        remove("%s_rename-json.py" % TESTPREFIX)
-        remove("sepp-%s-err.log" % TESTPREFIX)
-        remove("sepp-%s-out.log" % TESTPREFIX)
+        for file in ["%s_placement.json" % TESTPREFIX,
+                     "%s_placement.tog.relabelled.tre" % TESTPREFIX,
+                     "%s_placement.tog.relabelled.xml" % TESTPREFIX,
+                     "%s_placement.tog.tre" % TESTPREFIX,
+                     "%s_placement.tog.xml" % TESTPREFIX,
+                     "%s_rename-json.py" % TESTPREFIX,
+                     "sepp-%s-err.log" % TESTPREFIX,
+                     "sepp-%s-out.log" % TESTPREFIX]:
+            try:
+                remove(file)
+            except OSError:
+                pass
 
     def test_execution(self):
         fp_sepp_binary = resource_filename(Requirement.parse('qp-deblur'),
@@ -47,6 +51,9 @@ class seppNativeTests(TestCase):
                                         fp_ref_pytholgeny)
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         pr_out, pr_err = process.communicate()
+        print("==========OUT========", pr_out.decode())
+        print("==========ERR========", pr_err.decode())
+
         self.assertIn('INFO: All checkpointed executions Finished in',
                       pr_out.decode())
         self.assertEqual(b'', pr_err)
