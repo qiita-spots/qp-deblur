@@ -36,6 +36,27 @@ def _config_sepp(assets_dir):
                    cwd=assets_dir + '/sepp-package/sepp')
 
 
+def _initial():
+    import shutil
+
+    if shutil.which('java') is None:
+        raise ValueError('java not found')
+
+    result = subprocess.run(['java', '-version'], stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    err_content = result.stderr.decode('ascii')
+    if ('java version' not in err_content) and \
+       ('jdk version' not in err_content):
+        raise ValueError(('Please verify that java is installed and working. '
+                          'As a first test, please execute "java -version" '
+                          'and make sure the output shows there is an actual '
+                          'version installed. OSX lies. If Java needs to be '
+                          'installed, please obtain the 1.8 or greater Java '
+                          'Runtime Environment (JRE) from Oracle.com. A '
+                          'google search for "download jre" is likely to be '
+                          'sufficient.'))
+
+
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
@@ -43,6 +64,7 @@ class PostInstallCommand(install):
         import shutil
         import os
 
+        _initial(self)
         install.run(self)
 
         # using a tagged version from Siavash's repo
