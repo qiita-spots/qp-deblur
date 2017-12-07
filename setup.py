@@ -74,7 +74,8 @@ class PostInstallCommand(install):
         opened.close()
 
         # copy default taxonomy Greengenes 99%: OTU-ID to lineage
-        shutil.copy('taxonomy_gg99.qza', assets_dir)
+        # LEAVING AS WE MIGHT NEED IT IN THE FUTURE
+        # shutil.copy('taxonomy_gg99.qza', assets_dir)
 
         self.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
 
