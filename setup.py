@@ -43,6 +43,8 @@ class PostInstallCommand(install):
         import shutil
         import os
 
+        install.run(self)
+
         # using a tagged version from Siavash's repo
         git_tag = '4.3.4b'
         src_url = ('https://github.com/smirarab/sepp-refs/archive/%s.tar.gz' %
