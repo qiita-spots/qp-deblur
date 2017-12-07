@@ -64,7 +64,7 @@ class PostInstallCommand(install):
         import shutil
         import os
 
-        _initial(self)
+        _initial()
         install.run(self)
 
         # using a tagged version from Siavash's repo
