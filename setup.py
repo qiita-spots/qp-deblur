@@ -12,6 +12,7 @@ from setuptools import setup
 from setuptools.command.install import install
 import tarfile
 import subprocess
+import os
 
 __version__ = "1.0.3"
 
@@ -34,6 +35,11 @@ classes = """
 def _config_sepp(assets_dir):
     subprocess.run(['python', 'setup.py', 'config', '-c'], check=True,
                    cwd=assets_dir + '/sepp-package/sepp')
+
+
+def _patch_sepp(assets_dir, name_patch):
+    subprocess.run(['patch', 'sepp-package/run-sepp.sh', name_patch],
+                   check=True, cwd=assets_dir)
 
 
 def _initial():
@@ -101,6 +107,13 @@ class PostInstallCommand(install):
         # LEAVING AS WE MIGHT NEED IT IN THE FUTURE
         # shutil.copy('taxonomy_gg99.qza', assets_dir)
 
+        # copy patch file
+        name_patch = 'onlyplacements.patch'
+        shutil.copy(os.path.join('support_files', 'sepp', name_patch),
+                    assets_dir)
+
+        self.execute(_patch_sepp, [assets_dir, name_patch],
+                     'Patch run-sepp.sh')
         self.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
 
 
