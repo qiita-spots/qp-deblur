@@ -36,49 +36,47 @@ def _config_sepp(assets_dir):
                    cwd=assets_dir + '/sepp-package/sepp')
 
 
-def _postinstall(obj):
-    import urllib.request
-    import shutil
-    import os
-
-    # using a tagged version from Siavash's repo
-    git_tag = '4.3.4b'
-    src_url = ('https://github.com/smirarab/sepp-refs/archive/%s.tar.gz' %
-               git_tag)
-
-    assets_dir = os.path.join(obj.install_libbase,
-                              'q2_fragment_insertion/assets/')
-
-    if not os.path.exists(assets_dir):
-        os.mkdir(assets_dir)
-
-    out_f = 'tagged-sepp-package.tar.gz'
-    # 1/3: download git tagged version sources ...
-    with urllib.request.urlopen(src_url) as response, open(out_f, 'wb') as out:
-        shutil.copyfileobj(response, out)
-
-    # 2/3: ... which come as one tar archive that needs to be extracted ...
-    opened = tarfile.open(out_f, "r:gz")
-    opened.extractall(path=obj.install_libbase)
-    opened.close()
-
-    # 3/3: ... and contains another tar archive which is extracted here.
-    opened = tarfile.open(os.path.join(obj.install_libbase,
-                                       'sepp-refs-%s' % git_tag,
-                                       'gg', 'sepp-package.tar.bz'), "r:bz2")
-    opened.extractall(path=assets_dir)
-    opened.close()
-
-    # copy default taxonomy Greengenes 99%: OTU-ID to lineage
-    shutil.copy('taxonomy_gg99.qza', assets_dir)
-
-    obj.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
-
-
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
-        _postinstall()
+        import urllib.request
+        import shutil
+        import os
+
+        # using a tagged version from Siavash's repo
+        git_tag = '4.3.4b'
+        src_url = ('https://github.com/smirarab/sepp-refs/archive/%s.tar.gz' %
+                   git_tag)
+
+        assets_dir = os.path.join(self.install_libbase,
+                                  'q2_fragment_insertion/assets/')
+
+        if not os.path.exists(assets_dir):
+            os.mkdir(assets_dir)
+
+        out_f = 'tagged-sepp-package.tar.gz'
+        # 1/3: download git tagged version sources ...
+        with urllib.request.urlopen(
+                src_url) as response, open(out_f, 'wb') as out:
+            shutil.copyfileobj(response, out)
+
+        # 2/3: ... which come as one tar archive that needs to be extracted ...
+        opened = tarfile.open(out_f, "r:gz")
+        opened.extractall(path=self.install_libbase)
+        opened.close()
+
+        # 3/3: ... and contains another tar archive which is extracted here.
+        opened = tarfile.open(os.path.join(self.install_libbase,
+                                           'sepp-refs-%s' % git_tag,
+                                           'gg', 'sepp-package.tar.bz'),
+                              "r:bz2")
+        opened.extractall(path=assets_dir)
+        opened.close()
+
+        # copy default taxonomy Greengenes 99%: OTU-ID to lineage
+        shutil.copy('taxonomy_gg99.qza', assets_dir)
+
+        self.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
 
 
 with open('README.rst') as f:
