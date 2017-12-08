@@ -34,6 +34,8 @@ install:
   # for --process-dependency-links to work we need to have the latests version of pip
   - pip install -U pip
   - travis_retry pip install . --process-dependency-links
+  # the additional setup seems to be necessary because pip bundles everything
+  # into a "wheel" which breaks sepps config file when relocated
   - python setup.py install
 before_script:
   - source activate qiita
