@@ -101,9 +101,9 @@ def _post(obj):
                 assets_dir)
 
     obj.execute(_patch_sepp, [assets_dir, name_patch],
-                 'Patch run-sepp.sh')
+                'Patch run-sepp.sh')
     obj.execute(_patch_sepp, [assets_dir, name_patch2],
-                 'Patch run-sepp.sh debug')
+                'Patch run-sepp.sh debug')
     obj.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
 
 
@@ -131,6 +131,7 @@ class PostDevelopCommand(develop):
         _initial()
         develop.run(self)
         _post(self)
+
 
 with open('README.rst') as f:
     long_description = f.read()
