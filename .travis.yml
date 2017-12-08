@@ -34,6 +34,7 @@ install:
   # for --process-dependency-links to work we need to have the latests version of pip
   - pip install -U pip
   - travis_retry pip install . --process-dependency-links
+  - python setup.py install
 before_script:
   - source activate qiita
   - qiita pet webserver start &
