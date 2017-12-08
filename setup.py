@@ -78,7 +78,7 @@ class PostInstallCommand(install):
                    git_tag)
 
         assets_dir = os.path.join(self.install_libbase,
-                                  'assets/')
+                                  'qp_deblur/assets/')
 
         if not os.path.exists(assets_dir):
             os.mkdir(assets_dir)
