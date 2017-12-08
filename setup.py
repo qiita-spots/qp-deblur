@@ -11,6 +11,7 @@
 from setuptools import setup
 from setuptools.command.install import install
 import tarfile
+import subprocess
 
 __version__ = "1.0.3"
 
