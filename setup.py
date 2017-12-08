@@ -11,7 +11,6 @@
 from setuptools import setup
 from setuptools.command.install import install
 import tarfile
-import subprocess
 
 __version__ = "1.0.3"
 
@@ -119,9 +118,6 @@ class PostInstallCommand(install):
         self.execute(_patch_sepp, [assets_dir, name_patch2],
                      'Patch run-sepp.sh debug')
         self.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
-
-        print("ASSERTS_DIR >%s<" % assets_dir)
-        subprocess.run(['ls', '-laR', assets_dir], check=True, cwd=assets_dir)
 
 with open('README.rst') as f:
     long_description = f.read()
