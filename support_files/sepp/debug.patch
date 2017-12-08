@@ -1,0 +1,27 @@
+--- run-sepp.sh	2017-12-07 15:12:55.000000000 -0800
++++ run-sepp-debug.sh	2017-12-07 15:12:53.000000000 -0800
+@@ -32,15 +32,6 @@
+     export TMPDIR=$tmpbase
+ fi
+ 
+-# from http://stackoverflow.com/a/2130323
+-function cleanup {
+-  echo "Removing $tmp"
+-  rm -r $tmp
+-  rm -r $tmpssd
+-  unset TMPDIR
+-}
+-trap cleanup EXIT
+-
+ # Input sequence file
+ f=$1
+ shift
+@@ -100,8 +91,6 @@
+ # RAxML info file generated when creating the reference RAxML tree
+ rxi="$DIR/ref/RAxML_info-reference-gg-raxml-bl.info"
+ 
+-set -e
+-
+ python $DIR/sepp/run_sepp.py -P $p -A $a -t $t -a $alg -r $rxi -f $f -o $name $opts -d $tmp/ -p $tmpssd 1>sepp-$name-out.log 2>sepp-$name-err.log
+ 
+ tail sepp-$name-*
