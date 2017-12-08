@@ -37,14 +37,14 @@ class seppNativeTests(TestCase):
                 pass
 
     def test_execution(self):
-        assets_dir = resource_filename(Requirement.parse('qp-deblur'), 'assets/')
+        assets_dir = resource_filename(Requirement.parse('qp_deblur'), 'qp_deblur/assets/')
         print("ASSERTS_DIR >%s<" % assets_dir)
         subprocess.run(['ls', '-laR', assets_dir], check=True, cwd=assets_dir)
         subprocess.run(['cat', assets_dir+'sepp-package/sepp/.sepp/main.config'], check=True, cwd=assets_dir)
 
-
-        fp_sepp_binary = resource_filename(Requirement.parse('qp-deblur'),
-                                           'assets/sepp-package/run-sepp.sh')
+        fp_sepp_binary = resource_filename(
+            Requirement.parse('qp_deblur'),
+            'qp_deblur/assets/sepp-package/run-sepp.sh')
         fp_ref_alignment = join('support_files', 'sepp',
                                 'reference_alignment_tiny.fasta')
         fp_ref_pytholgeny = join('support_files', 'sepp',
