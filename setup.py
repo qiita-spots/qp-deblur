@@ -110,9 +110,14 @@ class PostInstallCommand(install):
         name_patch = 'onlyplacements.patch'
         shutil.copy(os.path.join('support_files', 'sepp', name_patch),
                     assets_dir)
+        name_patch2 = 'debug.patch'
+        shutil.copy(os.path.join('support_files', 'sepp', name_patch),
+                    assets_dir)
 
         self.execute(_patch_sepp, [assets_dir, name_patch],
                      'Patch run-sepp.sh')
+        self.execute(_patch_sepp, [assets_dir, name_patch2],
+                     'Patch run-sepp.sh debug')
         self.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
 
 
