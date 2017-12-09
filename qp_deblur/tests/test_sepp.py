@@ -60,6 +60,8 @@ class seppNativeTests(TestCase):
         pr_out, pr_err = process.communicate()
         print("==========OUT========", pr_out.decode())
         print("==========ERR========", pr_err.decode())
+        subprocess.run(['cat', 'sepp-foo-err.log'])
+        subprocess.run(['cat', 'sepp-foo-out.log'])
 
         self.assertIn('INFO: All checkpointed executions Finished in',
                       pr_out.decode())
