@@ -51,11 +51,11 @@ class seppNativeTests(TestCase):
                                  'reference_phylogeny_tiny.nwk')
         fp_input = join('support_files', 'sepp', 'input_fragments.fasta')
 
-        cmd = '%s %s %s -a %s -t %s' % (fp_sepp_binary,
-                                        fp_input,
-                                        TESTPREFIX,
-                                        fp_ref_alignment,
-                                        fp_ref_pytholgeny)
+        cmd = '%s %s %s -a %s -t %s -x 1' % (fp_sepp_binary,
+                                             fp_input,
+                                             TESTPREFIX,
+                                             fp_ref_alignment,
+                                             fp_ref_pytholgeny)
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         pr_out, pr_err = process.communicate()
         print("==========OUT========", pr_out.decode())
