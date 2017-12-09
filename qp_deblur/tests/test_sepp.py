@@ -12,7 +12,6 @@ from subprocess import Popen, PIPE
 
 from os.path import join
 from os import remove
-import subprocess
 
 TESTPREFIX = 'foo'
 
@@ -37,11 +36,6 @@ class seppNativeTests(TestCase):
                 pass
 
     def test_execution(self):
-        assets_dir = resource_filename(Requirement.parse('qp_deblur'), 'qp_deblur/assets/')
-        print("ASSERTS_DIR >%s<" % assets_dir)
-        subprocess.run(['ls', '-laR', assets_dir], check=True, cwd=assets_dir)
-        subprocess.run(['cat', assets_dir+'sepp-package/sepp/.sepp/main.config'], check=True, cwd=assets_dir)
-
         fp_sepp_binary = resource_filename(
             Requirement.parse('qp_deblur'),
             'qp_deblur/assets/sepp-package/run-sepp.sh')
@@ -58,10 +52,6 @@ class seppNativeTests(TestCase):
                                              fp_ref_pytholgeny)
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         pr_out, pr_err = process.communicate()
-        print("==========OUT========", pr_out.decode())
-        print("==========ERR========", pr_err.decode())
-        subprocess.run(['cat', 'sepp-foo-err.log'])
-        subprocess.run(['cat', 'sepp-foo-out.log'])
 
         self.assertIn('INFO: All checkpointed executions Finished in',
                       pr_out.decode())
