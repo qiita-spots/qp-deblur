@@ -78,7 +78,7 @@ class PostInstallCommand(install):
                    git_tag)
 
         assets_dir = os.path.join(self.install_libbase,
-                                  'assets/')
+                                  'qp_deblur/assets/')
 
         if not os.path.exists(assets_dir):
             os.mkdir(assets_dir)
@@ -110,9 +110,14 @@ class PostInstallCommand(install):
         name_patch = 'onlyplacements.patch'
         shutil.copy(os.path.join('support_files', 'sepp', name_patch),
                     assets_dir)
+        name_patch2 = 'debug.patch'
+        shutil.copy(os.path.join('support_files', 'sepp', name_patch2),
+                    assets_dir)
 
         self.execute(_patch_sepp, [assets_dir, name_patch],
                      'Patch run-sepp.sh')
+        self.execute(_patch_sepp, [assets_dir, name_patch2],
+                     'Patch run-sepp.sh debug')
         self.execute(_config_sepp, [assets_dir], 'Configuring SEPP')
 
 
@@ -135,7 +140,7 @@ setup(name='qp-deblur',
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
       install_requires=['click >= 3.3', 'future', 'deblur'],
       dependency_links=[
-        ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
-         'egg=qiita-files-0.1.0-dev')],
+          ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
+           'egg=qiita-files-0.1.0-dev')],
       classifiers=classifiers,
       cmdclass={'install': PostInstallCommand})
