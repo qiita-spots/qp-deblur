@@ -111,7 +111,7 @@ class PostInstallCommand(install):
         shutil.copy(os.path.join('support_files', 'sepp', name_patch),
                     assets_dir)
         name_patch2 = 'debug.patch'
-        shutil.copy(os.path.join('support_files', 'sepp', name_patch),
+        shutil.copy(os.path.join('support_files', 'sepp', name_patch2),
                     assets_dir)
 
         self.execute(_patch_sepp, [assets_dir, name_patch],
