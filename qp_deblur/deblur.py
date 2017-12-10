@@ -185,13 +185,17 @@ def deblur(qclient, job_id, parameters, out_dir):
     # Step 4, communicate with archive to check and generate placements
     qclient.update_job_step(job_id, "Step 4 of 4 (1/2): Retriving "
                             "observations information")
-    observations = qclient.post("/qiita_db/archive/observations/",
-                                data={'job_id': job_id, 'features': load_table(
-                                      final_biom_hit).ids(axis='observation')})
-    no_placements = [k for k, v in observations.items() if v == '']
-    qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
-                            "placements" % len(no_placements))
-    new_placements = generate_sepp_placements(no_placements)
+    features = list(load_table(final_biom_hit).ids(axis='observation'))
+    if features:
+        observations = qclient.post(
+            "/qiita_db/archive/observations/", data={'job_id': job_id,
+                                                     'features': features})
+        no_placements = [k for k, v in observations.items() if v == '']
+        qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
+                                "placements" % len(no_placements))
+        new_placements = generate_sepp_placements(no_placements)
+    else:
+        new_placements = None
 
     ainfo = [ArtifactInfo('deblur final table', 'BIOM',
                           [(final_biom, 'biom'),
