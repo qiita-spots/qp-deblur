@@ -13,7 +13,7 @@ from future.utils import viewitems
 from functools import partial
 from collections import OrderedDict
 
-from biom import Table
+from biom import Table, load_table
 from biom.util import biom_open
 from qiita_client import ArtifactInfo
 from qiita_client.util import system_call
@@ -73,6 +73,22 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     return cmd
 
 
+def generate_sepp_placements(seqs):
+    """Generates the sepp commands
+
+    Parameters
+    ----------
+    seqs : list of str
+        A list of seqs to generate placements
+
+    Returns
+    -------
+    dict of strings
+        keys are the seqs, values are the new placements as JSON strings
+    """
+    return {}
+
+
 def deblur(qclient, job_id, parameters, out_dir):
     """Run deblur with the given parameters
 
@@ -100,7 +116,7 @@ def deblur(qclient, job_id, parameters, out_dir):
     """
     out_dir = join(out_dir, 'deblur_out')
     # Step 1 get the rest of the information need to run deblur
-    qclient.update_job_step(job_id, "Step 1 of 3: Collecting information")
+    qclient.update_job_step(job_id, "Step 1 of 4: Collecting information")
     artifact_id = parameters['Demultiplexed sequences']
     # removing input from parameters so it's not part of the final command
     del parameters['Demultiplexed sequences']
@@ -111,7 +127,7 @@ def deblur(qclient, job_id, parameters, out_dir):
 
     # Step 2 generating command deblur
     if 'preprocessed_demux' in fps:
-        qclient.update_job_step(job_id, "Step 2 of 3: Generating per sample "
+        qclient.update_job_step(job_id, "Step 2 of 4: Generating per sample "
                                 "from demux (1/2)")
 
         if not exists(out_dir):
@@ -126,19 +142,19 @@ def deblur(qclient, job_id, parameters, out_dir):
         to_per_sample_files(fps['preprocessed_demux'][0],
                             out_dir=split_out_dir, n_jobs=n_jobs)
 
-        qclient.update_job_step(job_id, "Step 2 of 3: Generating per sample "
+        qclient.update_job_step(job_id, "Step 2 of 4: Generating per sample "
                                 "from demux (2/2)")
         out_dir = join(out_dir, 'deblured')
         cmd = generate_deblur_workflow_commands([split_out_dir],
                                                 out_dir, parameters)
     else:
-        qclient.update_job_step(job_id, "Step 2 of 3: Generating deblur "
+        qclient.update_job_step(job_id, "Step 2 of 4: Generating deblur "
                                 "command")
         cmd = generate_deblur_workflow_commands(fps['preprocessed_fastq'],
                                                 out_dir, parameters)
 
     # Step 3 execute deblur
-    qclient.update_job_step(job_id, "Step 3 of 3: Executing deblur job")
+    qclient.update_job_step(job_id, "Step 3 of 4: Executing deblur job")
     std_out, std_err, return_value = system_call(cmd)
     if return_value != 0:
         error_msg = ("Error running deblur:\nStd out: %s\nStd err: %s"
@@ -166,11 +182,27 @@ def deblur(qclient, job_id, parameters, out_dir):
         with open(final_seqs_hit, 'w') as f:
             f.write("")
 
+    # Step 4, communicate with archive to check and generate placements
+    qclient.update_job_step(job_id, "Step 4 of 4 (1/2): Retriving "
+                            "observations information")
+    features = list(load_table(final_biom_hit).ids(axis='observation'))
+    if features:
+        observations = qclient.post(
+            "/qiita_db/archive/observations/", data={'job_id': job_id,
+                                                     'features': features})
+        no_placements = [k for k, v in observations.items() if v == '']
+        qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
+                                "placements" % len(no_placements))
+        new_placements = generate_sepp_placements(no_placements)
+    else:
+        new_placements = None
+
     ainfo = [ArtifactInfo('deblur final table', 'BIOM',
                           [(final_biom, 'biom'),
                            (final_seqs, 'preprocessed_fasta')]),
              ArtifactInfo('deblur reference hit table', 'BIOM',
                           [(final_biom_hit, 'biom'),
-                           (final_seqs_hit, 'preprocessed_fasta')])]
+                           (final_seqs_hit, 'preprocessed_fasta')],
+                          new_placements)]
 
     return True, ainfo, ""
