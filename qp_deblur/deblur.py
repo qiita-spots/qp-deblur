@@ -12,6 +12,7 @@ from os.path import join, exists
 from future.utils import viewitems
 from functools import partial
 from collections import OrderedDict
+import json
 
 from biom import Table, load_table
 from biom.util import biom_open
@@ -73,20 +74,42 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     return cmd
 
 
-def generate_sepp_placements(seqs):
+def generate_sepp_placements(seqs, out_dir, threads):
     """Generates the sepp commands
 
     Parameters
     ----------
     seqs : list of str
         A list of seqs to generate placements
+    out_dir : str
+        The job output directory
+    threads : int
+        Number if CPU cores to use
 
     Returns
     -------
     dict of strings
         keys are the seqs, values are the new placements as JSON strings
     """
-    return {}
+    # Create a multiple fasta file for all input seqs
+    file_input = "%s/input.fasta" % out_dir
+    with open(file_input, 'w') as fh_input:
+        for seq in seqs:
+            fh_input.write(">%s\n%s\n" % (seq, seq))
+
+    # execute SEPP
+    run_name = 'qiita'
+    std_out, std_err, return_value = system_call(
+        'run-sepp.sh %s %s -x %i' % (file_input, run_name, threads))
+    if return_value != 0:
+        error_msg = ("Error running run-sepp.sh:\nStd out: %s\nStd err: %s"
+                     % (std_out, std_err))
+        return False, None, error_msg
+
+    # parse placements from SEPP results
+    with open('%s/%s_placement.json' % (out_dir, run_name), 'r') as fh_placements:
+        plcmnts = json.loads(fh_placements.read())
+        return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
 
 
 def deblur(qclient, job_id, parameters, out_dir):
@@ -193,7 +216,8 @@ def deblur(qclient, job_id, parameters, out_dir):
         no_placements = [k for k, v in observations.items() if v == '']
         qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
                                 "placements" % len(no_placements))
-        new_placements = generate_sepp_placements(no_placements)
+        new_placements = generate_sepp_placements(
+            no_placements, out_dir, parameters['Threads per sample'])
     else:
         new_placements = None
 
