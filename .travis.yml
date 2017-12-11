@@ -15,7 +15,7 @@ install:
     pyzmq networkx pyparsing natsort mock future libgfortran
     'pandas>=0.18' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
   - source activate qiita
-  - pip install sphinx sphinx-bootstrap-theme coveralls ipython[all]==2.4.1
+  - pip install sphinx sphinx-bootstrap-theme coveralls
   - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
   # as we don't need redbiom we are going to use the default redis port
   - sed 's/PORT = 7777/PORT = 6379/g' $HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg > config_test.cfg
@@ -26,7 +26,7 @@ install:
   # installing this plugin
   - conda create --yes -n deblur-1.0.3 python=$PYTHON_VERSION numpy flake8
   - source activate deblur-1.0.3
-  - conda install --yes -c bioconda -c biocore VSEARCH MAFFT=7.310 biom-format SortMeRNA==2.0
+  - conda install --yes -c bioconda -c biocore VSEARCH MAFFT=7.310 biom-format SortMeRNA==2.0 fragment-insertion
   - pip install https://github.com/biocore/deblur/archive/master.zip
   - pip install coveralls
   - pip install https://github.com/qiita-spots/qiita_client/archive/master.zip
