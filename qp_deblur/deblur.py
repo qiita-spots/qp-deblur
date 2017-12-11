@@ -6,8 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 
-from os import mkdir
-from os.path import join, exists
+from os import mkdir, environ
+from os.path import join, exists, abspath
 
 from future.utils import viewitems
 from functools import partial
@@ -74,7 +74,8 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     return cmd
 
 
-def generate_sepp_placements(seqs, out_dir, threads):
+def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
+                             reference_alignment=None):
     """Generates the sepp commands
 
     Parameters
@@ -85,6 +86,12 @@ def generate_sepp_placements(seqs, out_dir, threads):
         The job output directory
     threads : int
         Number if CPU cores to use
+    reference_phylogeny : str, optional
+        A filepath to an alternative reference phylogeny for SEPP.
+        If None, default phylogeny is uses, which is Greengenes 13.8 99% id.
+    reference_alignment : str, optional
+        A filepath to an alternative reference alignment for SEPP.
+        If None, default alignment is uses, which is Greengenes 13.8 99% id.
 
     Returns
     -------
@@ -99,15 +106,28 @@ def generate_sepp_placements(seqs, out_dir, threads):
 
     # execute SEPP
     run_name = 'qiita'
+    param_phylogeny = ''
+    if reference_phylogeny is not None:
+        param_phylogeny = ' -t %s ' % abspath(reference_phylogeny)
+    param_alignment = ''
+    if reference_alignment is not None:
+        param_alignment = ' -a %s ' % abspath(reference_alignment)
+    # SEPP writes output into the current working directory (cwd), therefore
+    # we here first need to store the cwd, then move into the output directory,
+    # perform SEPP and move back to the stored cwd for a clean state
+    curr_pwd = environ['PWD']
     std_out, std_err, return_value = system_call(
-        'run-sepp.sh %s %s -x %i' % (file_input, run_name, threads))
+        'cd %s && run-sepp.sh %s %s -x %i %s %s; cd %s' %
+        (out_dir, file_input, run_name, threads,
+         param_phylogeny, param_alignment, curr_pwd))
     if return_value != 0:
         error_msg = ("Error running run-sepp.sh:\nStd out: %s\nStd err: %s"
                      % (std_out, std_err))
         return False, None, error_msg
 
     # parse placements from SEPP results
-    with open('%s/%s_placement.json' % (out_dir, run_name), 'r') as fh_placements:
+    with open('%s/%s_placement.json' % (out_dir, run_name),
+              'r') as fh_placements:
         plcmnts = json.loads(fh_placements.read())
         return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
 
