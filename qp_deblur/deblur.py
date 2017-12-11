@@ -98,6 +98,10 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     dict of strings
         keys are the seqs, values are the new placements as JSON strings
     """
+    # return an empty dict if no sequences have been passed to the function
+    if len(seqs) < 1:
+        return {}
+
     # Create a multiple fasta file for all input seqs
     file_input = "%s/input.fasta" % out_dir
     with open(file_input, 'w') as fh_input:
