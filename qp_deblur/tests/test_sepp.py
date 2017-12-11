@@ -10,12 +10,10 @@ from unittest import TestCase, main
 from subprocess import Popen, PIPE
 
 from os import remove
-from os.path import exists, isdir, join
-from shutil import copyfile, rmtree
-from tempfile import mkstemp, mkdtemp
+from os.path import join
+from shutil import rmtree
+from tempfile import mkdtemp
 
-from qiita_client.testing import PluginTestCase
-from qp_deblur import plugin
 from qp_deblur.deblur import (generate_sepp_placements)
 
 
@@ -92,18 +90,28 @@ class seppTests(TestCase):
             ('TACGGAGGGTGCAAGCGTTAATCGGAATCACTGGGCGTAAAGCGCACGTAGGCGGCTTGGTAAG'
              'TCAGGGGTGAGATCCCACAGCCCAACTGTGGAACTGCCTTTGATACTGCCAGGCTTGAGTA')]
 
-    def tearDown(self):
-        for fp in self._clean_up_files:
-            if exists(fp):
-                if isdir(fp):
-                    rmtree(fp)
-                else:
-                    remove(fp)
-
     def test_generate_sepp_placements(self):
+        fp_ref_alignment = join('support_files', 'sepp',
+                                'reference_alignment_tiny.fasta')
+        fp_ref_phylogeny = join('support_files', 'sepp',
+                                'reference_phylogeny_tiny.nwk')
         out_dir = mkdtemp()
-        placements = generate_sepp_placements(self.seqs, out_dir, 5)
-        #self._clean_up_files.append(out_dir)
+        # testing default references might take up to 10 minutes of compute
+        placements = generate_sepp_placements(
+            self.seqs, out_dir, 1, reference_alignment=fp_ref_alignment,
+            reference_phylogeny=fp_ref_phylogeny)
+
+        # test that every sequence has a placement
+        for seq in self.seqs:
+            self.assertIn(seq, placements)
+
+        # test that placement for seq nr 7 has only one placement ...
+        self.assertEqual(len(placements[self.seqs[6]]), 1)
+        # ... and the sequence gets placed into node 957
+        self.assertEqual(placements[self.seqs[6]][0][0], 957)
+
+        # clean up working directory
+        rmtree(out_dir)
 
 
 if __name__ == '__main__':
