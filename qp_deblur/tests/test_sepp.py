@@ -113,6 +113,9 @@ class seppTests(TestCase):
         # clean up working directory
         rmtree(out_dir)
 
+    def test_generate_sepp_placements_noseqs(self):
+        self.assertEqual(generate_sepp_placements([], None, 1), {})
+
 
 if __name__ == '__main__':
     main()
