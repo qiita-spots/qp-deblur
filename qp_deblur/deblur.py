@@ -74,7 +74,7 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
 
 
 def generate_sepp_placements(seqs):
-    """Generates the deblur commands
+    """Generates the sepp commands
 
     Parameters
     ----------
