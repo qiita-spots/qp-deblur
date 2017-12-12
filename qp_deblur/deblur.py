@@ -151,6 +151,25 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         return False, None, error_msg
 
 
+def generate_insertion_trees(seqs, out_dir):
+    """Generates phylogenetic trees by inserting placements into a reference
+
+    Parameters
+    ----------
+    seqs : list of str
+        A list of seqs to place into the reference phylogeny
+    out_dir : str
+        The job output directory
+
+    Returns
+    -------
+    str
+        The phylogenetic insertion tree in Newick format.
+    """
+    
+    return ""
+
+
 def deblur(qclient, job_id, parameters, out_dir):
     """Run deblur with the given parameters
 
