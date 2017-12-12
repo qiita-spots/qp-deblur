@@ -97,6 +97,12 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     -------
     dict of strings
         keys are the seqs, values are the new placements as JSON strings
+
+    Raises
+    ------
+    ValueError
+        If run-sepp.sh does not produce expected file placements.json which is
+        an indicator that something failed.
     """
     # return an empty dict if no sequences have been passed to the function
     if len(seqs) < 1:
