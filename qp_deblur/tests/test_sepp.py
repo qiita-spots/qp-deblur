@@ -136,17 +136,17 @@ class seppTests(TestCase):
              [823, -25332.365, 0.038650226, 0.044555224, 0.18255654],
              [962, -25332.752, 0.02623141, 0.14301622, 0.16091308],
              [932, -25333.133, 0.017925516, 0.17963046, 0.16220896]]}
+        self.fp_ref_alignment = abspath(join('support_files', 'sepp',
+                                             'reference_alignment_tiny.fasta'))
+        self.fp_ref_phylogeny = abspath(join('support_files', 'sepp',
+                                             'reference_phylogeny_tiny.nwk'))
 
     def test_generate_sepp_placements(self):
-        fp_ref_alignment = abspath(join('support_files', 'sepp',
-                                        'reference_alignment_tiny.fasta'))
-        fp_ref_phylogeny = abspath(join('support_files', 'sepp',
-                                        'reference_phylogeny_tiny.nwk'))
         out_dir = mkdtemp()
         # testing default references might take up to 10 minutes of compute
         placements = generate_sepp_placements(
-            self.seqs, out_dir, 1, reference_alignment=fp_ref_alignment,
-            reference_phylogeny=fp_ref_phylogeny)
+            self.seqs, out_dir, 1, reference_alignment=self.fp_ref_alignment,
+            reference_phylogeny=self.fp_ref_phylogeny)
 
         # test that every sequence has a placement
         for seq in self.seqs:
@@ -173,6 +173,14 @@ class seppTests(TestCase):
             self.seqs, out_dir, 1, reference_phylogeny='/dev/null')
 
         rmtree(out_dir)
+
+    def test_generate_sepp_placements_wronginput(self):
+        out_dir = mkdtemp()
+        self.assertRaisesRegex(
+            ValueError, "illegal character", generate_sepp_placements,
+            ['389734897639'], out_dir, 1,
+            reference_alignment=self.fp_ref_alignment,
+            reference_phylogeny=self.fp_ref_phylogeny)
 
 
 if __name__ == '__main__':
