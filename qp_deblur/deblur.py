@@ -124,10 +124,6 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         'cd %s && run-sepp.sh %s %s -x %i %s %s; cd %s' %
         (out_dir, file_input, run_name, threads,
          param_phylogeny, param_alignment, curr_pwd))
-    if return_value != 0:
-        error_msg = ("Error running run-sepp.sh:\nStd out: %s\nStd err: %s"
-                     % (std_out, std_err))
-        return False, None, error_msg
 
     # parse placements from SEPP results
     try:
