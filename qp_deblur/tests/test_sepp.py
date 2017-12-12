@@ -10,7 +10,7 @@ from unittest import TestCase, main
 from subprocess import Popen, PIPE
 
 from os import remove
-from os.path import join
+from os.path import join, abspath
 from shutil import rmtree
 from tempfile import mkdtemp
 
@@ -40,11 +40,12 @@ class seppNativeTests(TestCase):
                 pass
 
     def test_execution(self):
-        fp_ref_alignment = join('support_files', 'sepp',
-                                'reference_alignment_tiny.fasta')
-        fp_ref_pytholgeny = join('support_files', 'sepp',
-                                 'reference_phylogeny_tiny.nwk')
-        fp_input = join('support_files', 'sepp', 'input_fragments.fasta')
+        fp_ref_alignment = abspath(join('support_files', 'sepp',
+                                        'reference_alignment_tiny.fasta'))
+        fp_ref_pytholgeny = abspath(join('support_files', 'sepp',
+                                         'reference_phylogeny_tiny.nwk'))
+        fp_input = abspath(join('support_files', 'sepp',
+                                'input_fragments.fasta'))
 
         cmd = 'run-sepp.sh %s %s -a %s -t %s -x 1' % (
             fp_input,
@@ -137,10 +138,10 @@ class seppTests(TestCase):
              [932, -25333.133, 0.017925516, 0.17963046, 0.16220896]]}
 
     def test_generate_sepp_placements(self):
-        fp_ref_alignment = join('support_files', 'sepp',
-                                'reference_alignment_tiny.fasta')
-        fp_ref_phylogeny = join('support_files', 'sepp',
-                                'reference_phylogeny_tiny.nwk')
+        fp_ref_alignment = abspath(join('support_files', 'sepp',
+                                        'reference_alignment_tiny.fasta'))
+        fp_ref_phylogeny = abspath(join('support_files', 'sepp',
+                                        'reference_phylogeny_tiny.nwk'))
         out_dir = mkdtemp()
         # testing default references might take up to 10 minutes of compute
         placements = generate_sepp_placements(
@@ -167,11 +168,9 @@ class seppTests(TestCase):
 
     def test_generate_sepp_placements_nonzero(self):
         out_dir = mkdtemp()
-        obs = generate_sepp_placements(self.seqs, out_dir, 1,
-                                       reference_phylogeny='/dev/null')
-        self.assertEqual(obs[0], False)
-        self.assertEqual(obs[1], None)
-        self.assertIn('Error running run-sepp.sh', obs[2])
+        self.assertRaisesRegex(
+            ValueError, "Error running run-sepp.sh", generate_sepp_placements,
+            self.seqs, out_dir, 1, reference_phylogeny='/dev/null')
 
         rmtree(out_dir)
 

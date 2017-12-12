@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 from os import mkdir, environ
-from os.path import join, exists, abspath
+from os.path import join, exists
 
 from future.utils import viewitems
 from functools import partial
@@ -112,10 +112,10 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     run_name = 'qiita'
     param_phylogeny = ''
     if reference_phylogeny is not None:
-        param_phylogeny = ' -t %s ' % abspath(reference_phylogeny)
+        param_phylogeny = ' -t %s ' % reference_phylogeny
     param_alignment = ''
     if reference_alignment is not None:
-        param_alignment = ' -a %s ' % abspath(reference_alignment)
+        param_alignment = ' -a %s ' % reference_alignment
     # SEPP writes output into the current working directory (cwd), therefore
     # we here first need to store the cwd, then move into the output directory,
     # perform SEPP and move back to the stored cwd for a clean state
@@ -148,7 +148,7 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
                 std_out = fh_stdout.readlines()
         error_msg = ("Error running run-sepp.sh:\nStd out: %s\nStd err: %s"
                      % (std_out, std_err))
-        return False, None, error_msg
+        raise ValueError(error_msg)
 
 
 def deblur(qclient, job_id, parameters, out_dir):
@@ -255,8 +255,11 @@ def deblur(qclient, job_id, parameters, out_dir):
         no_placements = [k for k, v in observations.items() if v == '']
         qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
                                 "placements" % len(no_placements))
-        new_placements = generate_sepp_placements(
-            no_placements, out_dir, parameters['Threads per sample'])
+        try:
+            new_placements = generate_sepp_placements(
+                no_placements, out_dir, parameters['Threads per sample'])
+        except ValueError as e:
+            return False, None, str(e)
     else:
         new_placements = None
 
