@@ -130,10 +130,17 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         return False, None, error_msg
 
     # parse placements from SEPP results
-    with open('%s/%s_placement.json' % (out_dir, run_name),
-              'r') as fh_placements:
-        plcmnts = json.loads(fh_placements.read())
-        return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
+    try:
+        with open('%s/%s_placement.json' % (out_dir, run_name),
+                  'r') as fh_placements:
+            plcmnts = json.loads(fh_placements.read())
+            return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
+    except OSError:
+        # due to the wrapper style of run-sepp.sh the actual exit code is never
+        # returned and we have no way of finding out which sub-command failed
+        # Therefore, we can only assume that something went wrong by not
+        # observing the expected output file.
+        return False, None, "Something went wrong with run-sepp.sh"
 
 
 def deblur(qclient, job_id, parameters, out_dir):

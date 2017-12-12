@@ -116,6 +116,13 @@ class seppTests(TestCase):
     def test_generate_sepp_placements_noseqs(self):
         self.assertEqual(generate_sepp_placements([], None, 1), {})
 
+    def test_generate_sepp_placements_nonzero(self):
+        out_dir = mkdtemp()
+        obs = generate_sepp_placements(self.seqs, out_dir, 1,
+                                       reference_phylogeny='/dev/null')
+        self.assertEqual(obs, (False, None,
+                               'Something went wrong with run-sepp.sh'))
+        rmtree(out_dir)
 
 if __name__ == '__main__':
     main()
