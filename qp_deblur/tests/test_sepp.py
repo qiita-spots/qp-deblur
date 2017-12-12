@@ -124,5 +124,6 @@ class seppTests(TestCase):
                                'Something went wrong with run-sepp.sh'))
         rmtree(out_dir)
 
+
 if __name__ == '__main__':
     main()
