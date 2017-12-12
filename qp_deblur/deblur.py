@@ -6,12 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 
-from os import mkdir
+from os import mkdir, environ
 from os.path import join, exists
 
 from future.utils import viewitems
 from functools import partial
 from collections import OrderedDict
+import json
 
 from biom import Table, load_table
 from biom.util import biom_open
@@ -73,20 +74,87 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     return cmd
 
 
-def generate_sepp_placements(seqs):
+def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
+                             reference_alignment=None):
     """Generates the sepp commands
 
     Parameters
     ----------
     seqs : list of str
         A list of seqs to generate placements
+    out_dir : str
+        The job output directory
+    threads : int
+        Number if CPU cores to use
+    reference_phylogeny : str, optional
+        A filepath to an alternative reference phylogeny for SEPP.
+        If None, default phylogeny is uses, which is Greengenes 13.8 99% id.
+    reference_alignment : str, optional
+        A filepath to an alternative reference alignment for SEPP.
+        If None, default alignment is uses, which is Greengenes 13.8 99% id.
 
     Returns
     -------
     dict of strings
         keys are the seqs, values are the new placements as JSON strings
+
+    Raises
+    ------
+    ValueError
+        If run-sepp.sh does not produce expected file placements.json which is
+        an indicator that something failed.
     """
-    return {}
+    # return an empty dict if no sequences have been passed to the function
+    if len(seqs) < 1:
+        return {}
+
+    # Create a multiple fasta file for all input seqs
+    file_input = "%s/input.fasta" % out_dir
+    with open(file_input, 'w') as fh_input:
+        for seq in seqs:
+            fh_input.write(">%s\n%s\n" % (seq, seq))
+
+    # execute SEPP
+    run_name = 'qiita'
+    param_phylogeny = ''
+    if reference_phylogeny is not None:
+        param_phylogeny = ' -t %s ' % reference_phylogeny
+    param_alignment = ''
+    if reference_alignment is not None:
+        param_alignment = ' -a %s ' % reference_alignment
+    # SEPP writes output into the current working directory (cwd), therefore
+    # we here first need to store the cwd, then move into the output directory,
+    # perform SEPP and move back to the stored cwd for a clean state
+    curr_pwd = environ['PWD']
+    std_out, std_err, return_value = system_call(
+        'cd %s && run-sepp.sh %s %s -x %i %s %s; cd %s' %
+        (out_dir, file_input, run_name, threads,
+         param_phylogeny, param_alignment, curr_pwd))
+
+    # parse placements from SEPP results
+    file_placements = '%s/%s_placement.json' % (out_dir, run_name)
+    if exists(file_placements):
+        with open(file_placements, 'r') as fh_placements:
+            plcmnts = json.loads(fh_placements.read())
+            return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
+    else:
+        # due to the wrapper style of run-sepp.sh the actual exit code is never
+        # returned and we have no way of finding out which sub-command failed
+        # Therefore, we can only assume that something went wrong by not
+        # observing the expected output file.
+        # If the main SEPP program fails, it reports some information in two
+        # files, whoes content we can read and report
+        file_stderr = '%s/sepp-%s-err.log' % (out_dir, run_name)
+        if exists(file_stderr):
+            with open(file_stderr, 'r') as fh_stderr:
+                std_err = fh_stderr.readlines()
+        file_stdout = '%s/sepp-%s-out.log' % (out_dir, run_name)
+        if exists(file_stdout):
+            with open(file_stdout, 'r') as fh_stdout:
+                std_out = fh_stdout.readlines()
+        error_msg = ("Error running run-sepp.sh:\nStd out: %s\nStd err: %s"
+                     % (std_out, std_err))
+        raise ValueError(error_msg)
 
 
 def deblur(qclient, job_id, parameters, out_dir):
@@ -193,7 +261,11 @@ def deblur(qclient, job_id, parameters, out_dir):
         no_placements = [k for k, v in observations.items() if v == '']
         qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
                                 "placements" % len(no_placements))
-        new_placements = generate_sepp_placements(no_placements)
+        try:
+            new_placements = generate_sepp_placements(
+                no_placements, out_dir, parameters['Threads per sample'])
+        except ValueError as e:
+            return False, None, str(e)
     else:
         new_placements = None
 
