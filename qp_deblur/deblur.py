@@ -126,17 +126,29 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
          param_phylogeny, param_alignment, curr_pwd))
 
     # parse placements from SEPP results
-    try:
-        with open('%s/%s_placement.json' % (out_dir, run_name),
-                  'r') as fh_placements:
+    file_placements = '%s/%s_placement.json' % (out_dir, run_name)
+    if exists(file_placements):
+        with open(file_placements, 'r') as fh_placements:
             plcmnts = json.loads(fh_placements.read())
             return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
-    except OSError:
+    else:
         # due to the wrapper style of run-sepp.sh the actual exit code is never
         # returned and we have no way of finding out which sub-command failed
         # Therefore, we can only assume that something went wrong by not
         # observing the expected output file.
-        return False, None, "Something went wrong with run-sepp.sh"
+        # If the main SEPP program fails, it reports some information in two
+        # files, whoes content we can read and report
+        file_stderr = '%s/sepp-%s-err.log' % (out_dir, run_name)
+        if exists(file_stderr):
+            with open(file_stderr, 'r') as fh_stderr:
+                std_err = fh_stderr.readlines()
+        file_stdout = '%s/sepp-%s-out.log' % (out_dir, run_name)
+        if exists(file_stdout):
+            with open(file_stdout, 'r') as fh_stdout:
+                std_out = fh_stdout.readlines()
+        error_msg = ("Error running run-sepp.sh:\nStd out: %s\nStd err: %s"
+                     % (std_out, std_err))
+        return False, None, error_msg
 
 
 def deblur(qclient, job_id, parameters, out_dir):
