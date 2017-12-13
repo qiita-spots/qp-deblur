@@ -1,5 +1,6 @@
 language: python
-sudo: false
+sudo: required
+group: deprecated-2017Q4
 env:
   - PYTHON_VERSION=3.5
 before_install:
