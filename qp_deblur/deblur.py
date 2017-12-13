@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 from os import mkdir, environ
-from os.path import join, exists, abspath, split
+from os.path import join, exists, split
 from shutil import which
 from pkg_resources import Requirement, resource_filename
 
