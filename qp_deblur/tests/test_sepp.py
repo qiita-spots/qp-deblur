@@ -14,7 +14,8 @@ from os.path import join, abspath
 from shutil import rmtree
 from tempfile import mkdtemp
 
-from qp_deblur.deblur import (generate_sepp_placements)
+from qp_deblur.deblur import (generate_sepp_placements,
+                              generate_insertion_trees)
 
 
 TESTPREFIX = 'foo'
@@ -140,6 +141,10 @@ class seppTests(TestCase):
                                              'reference_alignment_tiny.fasta'))
         self.fp_ref_phylogeny = abspath(join('support_files', 'sepp',
                                              'reference_phylogeny_tiny.nwk'))
+        self.fp_ref_template = abspath(join('support_files', 'sepp',
+                                            'tmpl_tiny_placement.json'))
+        self.fp_ref_rename = abspath(join('support_files', 'sepp',
+                                          'tmpl_tiny_rename-json.py'))
 
     def test_generate_sepp_placements(self):
         out_dir = mkdtemp()
@@ -182,6 +187,50 @@ class seppTests(TestCase):
             reference_alignment=self.fp_ref_alignment,
             reference_phylogeny=self.fp_ref_phylogeny)
 
+    def test_generate_insertion_trees(self):
+        out_dir = mkdtemp()
+        tree = generate_insertion_trees(
+            self.exp, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=self.fp_ref_rename)
+        for seq in self.seqs:
+            self.assertIn(seq, tree)
+        rmtree(out_dir)
+
+    def test_generate_insertion_errors(self):
+        out_dir = mkdtemp()
+        file_missing = '/dev/notthere'
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference template '%s' does not exits!" % file_missing,
+            generate_insertion_trees,
+            self.exp, out_dir,
+            reference_template=file_missing,
+            reference_rename=self.fp_ref_rename)
+
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference rename script does not exits!",
+            generate_insertion_trees,
+            self.exp, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=file_missing)
+
+        self.assertRaisesRegex(
+            ValueError,
+            "Error running guppy",
+            generate_insertion_trees,
+            {"acgauugac": ["this is wrong"]}, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=self.fp_ref_rename)
+
+        tree = generate_insertion_trees(
+            self.exp, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=self.fp_ref_template)
+
+        print(tree)
+        rmtree(out_dir)
 
 if __name__ == '__main__':
     main()
