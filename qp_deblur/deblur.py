@@ -7,7 +7,8 @@
 # -----------------------------------------------------------------------------
 
 from os import mkdir, environ
-from os.path import join, exists, abspath
+from os.path import join, exists, abspath, split
+from shutil import which
 
 from future.utils import viewitems
 from functools import partial
@@ -151,13 +152,43 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         return False, None, error_msg
 
 
-def generate_insertion_trees(seqs, out_dir):
+def _get_guppy_binary():
+    """Find the right guppy binary.
+
+    Returns
+    -------
+    str : filepath of the guppy binary.
+
+    Raises
+    ------
+    ValueError if
+        a) grep'ing DIR in the run-sepp.sh script or
+        b) grep'ing pplacer path in main.config fails
+    """
+    # 1) locate sepp binary
+    fp_sepp_binary = which('run-sepp.sh')
+    # 2) obtain shared directory by grep'ing DIR from the run-sepp.sh script
+    std_out, _, return_value = system_call('grep "^DIR=" %s' % fp_sepp_binary)
+    if return_value != 0:
+        raise ValueError("Could not determine SEPP shared directory.")
+    fp_sepp_shared = std_out.split('=')[-1].strip()
+    # 3) grep'ing pplacer path
+    std_out, _, return_value = system_call(
+        'grep "\[pplacer\]" %s -A 1 | grep "path"' %
+        join(fp_sepp_shared, 'sepp', '.sepp', 'main.config'))
+    if return_value != 0:
+        raise ValueError("Could not determine SEPP bundled tool directory.")
+    fp_sepp_bundled = split(std_out.split('=')[-1].strip())[0]
+    return join(fp_sepp_bundled, 'guppy')
+
+
+def generate_insertion_trees(placements, out_dir):
     """Generates phylogenetic trees by inserting placements into a reference
 
     Parameters
     ----------
-    seqs : list of str
-        A list of seqs to place into the reference phylogeny
+    placements : dict of strings
+        keys are the seqs, values are the new placements as JSON strings
     out_dir : str
         The job output directory
 
@@ -166,7 +197,38 @@ def generate_insertion_trees(seqs, out_dir):
     str
         The phylogenetic insertion tree in Newick format.
     """
-    
+
+    # The following files is the template for the input to the program guppy,
+    # however the list of placements is empty and needs to be filles with the
+    # actual placements. Included is the converted reference phylogeny
+    # (here for Greengenes 13.8). Conversion is necessary to esapce node names
+    # and imply a depth-first numbering of all nodes; otherwise guppy will fail
+    # or produce wrong results.
+    # Note to future developers: Once we allow alternative reference trees
+    # (besides Greenegens 13.8 99%), we also need to make sure the according
+    # template is used. You can generate a template by natively running
+    # run-sepp.sh with at least one sequence. One of the resulting files will
+    # end with the suffix placements.json. Edit this file by removing all
+    # placements, i.e. make it an empty list []. That's it!
+    FILE_PLC_TEMPLATE = join(
+        'support_files', 'sepp', 'placement_template.json')
+
+    # create a valid placement.json file as input for guppy
+    with open(FILE_PLC_TEMPLATE, 'r') as f:
+        plcmnts = json.loads(f.read())
+        for sequence, placement in placements.items():
+            plcmnts['placements'].append({'p': placement,
+                                          'nm': [[sequence, 1]]})
+
+    file_placements = '%s/placements.json' % out_dir
+    with open(file_placements, 'w') as f:
+        json.dump(plcmnts, f)
+
+    fp_guppy = _get_guppy_binary()
+    std_out, std_err, return_value = system_call(
+        '%s tog %s -o %s' %
+        (fp_guppy, file_placements, join(out_dir, 'insertion_tree.nwk'))
+
     return ""
 
 
