@@ -288,11 +288,10 @@ class seppTests(TestCase):
             file_missing,
             out_dir)
 
-        # something wrong resulting in non existing placement file,
-        # here wrong input files
+        # failing SEPP run
         self.assertRaisesRegex(
-            IOError,
-            "dummy_placement.json",
+            ValueError,
+            "Error running SEPP",
             _generate_template_rename,
             self.fp_ref_alignment,
             self.fp_ref_phylogeny,
