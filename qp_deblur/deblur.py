@@ -9,6 +9,7 @@
 from os import mkdir, environ
 from os.path import join, exists, abspath, split
 from shutil import which
+from pkg_resources import Requirement, resource_filename
 
 from future.utils import viewitems
 from functools import partial
@@ -189,7 +190,8 @@ def _get_guppy_binary():
 
 
 def generate_insertion_trees(placements, out_dir,
-                             reference_template='gg13.8-99'):
+                             reference_template=None,
+                             reference_rename=None):
     """Generates phylogenetic trees by inserting placements into a reference
 
     Parameters
@@ -198,13 +200,18 @@ def generate_insertion_trees(placements, out_dir,
         keys are the seqs, values are the new placements as JSON strings
     out_dir : str
         The job output directory
-    reference_template : str
-        The name of the reference template, which point to template
-        placement.json and rename-json.py files. Those two files are needed to
-        run guppy and convert the previously renamed tree back to orginal node
-        names.
-        Thus, this name and the according files need to be in sync with the
-        reference phylogeny/alignment that were used to produce placements!
+    reference_template : str, optional
+        Filepath to the reference placement json file. This file is the result
+        of a run-sepp.sh run with at least one sequence, but placements are
+        manually removed, i.e. the placements field is the empty list []. Make
+        sure that the template is in sync with the reference that was used to
+        generate the placements!
+        If None, it falls back to the Greengenes 13.8 99% reference.
+    reference_rename : str, optional
+        Similar to reference_template, but a filepath to the generated python
+        renaming script to undo the name scaping post guppy.
+        If None, it falls back to the Greengenes 13.8 99% reference.
+
     Returns
     -------
     str
@@ -212,14 +219,19 @@ def generate_insertion_trees(placements, out_dir,
     """
 
     # create a valid placement.json file as input for guppy
-    with open(join('support_files',
-                   'sepp',
-                   'tmpl_%s_placement.json' % reference_template), 'r') as f:
+    file_ref_template = resource_filename(
+        Requirement.parse('qp_deblur'),
+        'qp_deblur/assets/tmpl_gg13.8-99_placement.json')
+    if reference_template is not None:
+        file_ref_template = reference_template
+    if not exists(file_ref_template):
+        raise ValueError("Reference template '%s' does not exits!" %
+                         file_ref_template)
+    with open(file_ref_template, 'r') as f:
         plcmnts = json.loads(f.read())
         for sequence, placement in placements.items():
             plcmnts['placements'].append({'p': placement,
                                           'nm': [[sequence, 1]]})
-
     file_placements = '%s/placements.json' % out_dir
     with open(file_placements, 'w') as f:
         json.dump(plcmnts, f)
@@ -236,17 +248,21 @@ def generate_insertion_trees(placements, out_dir,
 
     # execute node name re-labeling (to revert the escaping of names necessary
     # for guppy)
+    file_ref_rename = resource_filename(
+        Requirement.parse('qp_deblur'),
+        'qp_deblur/assets/tmpl_gg13.8-99_rename-json.py')
+    if reference_rename is not None:
+        file_ref_rename = reference_rename
+    if not exists(file_ref_rename):
+        raise ValueError("Reference rename script does not exits!")
     file_tree = join(out_dir, 'insertion_tree.relabelled.tre')
     std_out, std_err, return_value = system_call(
         'cat %s | python %s > %s' %
-        (file_tree_escaped,
-         join('support_files', 'sepp',
-              'tmpl_%s_rename-json.py' % reference_template),
-         file_tree))
+        (file_tree_escaped, file_ref_rename, file_tree))
     if return_value != 0:
-        error_msg = (("Error running tmpl_%s_rename-json.py:\n"
+        error_msg = (("Error running %s:\n"
                       "Std out: %s\nStd err: %s")
-                     % (reference_template, std_out, std_err))
+                     % (file_ref_rename, std_out, std_err))
         raise ValueError(error_msg)
 
     with open(file_tree, 'r') as f:
