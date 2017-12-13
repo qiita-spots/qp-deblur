@@ -189,6 +189,69 @@ def _get_guppy_binary():
     return join(fp_sepp_bundled, 'guppy')
 
 
+def _generate_template_rename(file_reference_phylogeny,
+                              file_reference_alignment,
+                              out_dir):
+    """Produces placement template and rename script for reference phylogeny.
+
+    Parameters
+    ----------
+    file_reference_phylogeny : str
+        A filepath to an alternative reference phylogeny for SEPP.
+    file_reference_alignment : str
+        A filepath to an alternative reference alignment for SEPP.
+    out_dir : str
+        The job output directory
+
+    Returns
+    -------
+    (str, str) : Filepaths of reference_template json file and
+    reference_rename python script.
+
+    Notes
+    -----
+    This function only needs to be called once per reference phylogeny/
+    alignment, i.e. if we update Greengenes or extend SEPP for Silva or other
+    reference phylogenies. I am including this function for easier maintainance
+    in the future.
+    """
+    if not exists(out_dir):
+        raise ValueError("Output directory '%s' does not exist!" % out_dir)
+    if not exists(file_reference_phylogeny):
+        raise ValueError("Reference phylogeny file '%s' does not exits!" %
+                         file_reference_phylogeny)
+    if not exists(file_reference_alignment):
+        raise ValueError("Reference alignment file '%s' does not exits!" %
+                         file_reference_alignment)
+
+    # create a dummy sequence input file
+    file_input = '%s/input.fasta' % out_dir
+    with open(file_input, 'w') as f:
+        f.write('>dummySeq\n')
+        f.write('TACGTAGGGGGCAAGCGTTATCCGGATTTACTGGGTGTAAAGGGAGCGTAGACGGATGGA'
+                'CAAGTCTGATGTGAAAGGCTGGGGCCCAACCCCGGGACTGCATTGGAAACTGCCCGTCTT'
+                'GAGTG\n')
+    std_out, std_err, return_value = system_call(
+        'cd %s; run-sepp.sh %s dummy -x 1 -a %s -t %s' %
+        (out_dir, file_input, file_reference_alignment,
+         file_reference_phylogeny))
+    if return_value != 0:
+        error_msg = ("Error running SEPP:\nStd out: %s\nStd err: %s"
+                     % (std_out, std_err))
+        raise ValueError(error_msg)
+
+    # take resulting placement.json and turn it into the template by
+    # clearing the list of placements
+    file_template = '%s/tmpl_dummy_placement.json' % out_dir
+    with open('%s/dummy_placement.json' % out_dir, 'r') as f:
+        placements = json.loads(f.read())
+        placements['placements'] = []
+        with open(file_template, 'w') as fw:
+            json.dump(placements, fw)
+
+    return (file_template, '%s/dummy_rename-json.py' % out_dir)
+
+
 def generate_insertion_trees(placements, out_dir,
                              reference_template=None,
                              reference_rename=None):
@@ -201,11 +264,9 @@ def generate_insertion_trees(placements, out_dir,
     out_dir : str
         The job output directory
     reference_template : str, optional
-        Filepath to the reference placement json file. This file is the result
-        of a run-sepp.sh run with at least one sequence, but placements are
-        manually removed, i.e. the placements field is the empty list []. Make
-        sure that the template is in sync with the reference that was used to
-        generate the placements!
+        Filepath to the reference placement json file.
+        This file can be produced via _generate_template_rename() and should be
+        stored in the plugin package, because it can re used.
         If None, it falls back to the Greengenes 13.8 99% reference.
     reference_rename : str, optional
         Similar to reference_template, but a filepath to the generated python
