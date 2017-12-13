@@ -188,7 +188,8 @@ def _get_guppy_binary():
     return join(fp_sepp_bundled, 'guppy')
 
 
-def generate_insertion_trees(placements, out_dir):
+def generate_insertion_trees(placements, out_dir,
+                             reference_template='gg13.8-99'):
     """Generates phylogenetic trees by inserting placements into a reference
 
     Parameters
@@ -197,30 +198,23 @@ def generate_insertion_trees(placements, out_dir):
         keys are the seqs, values are the new placements as JSON strings
     out_dir : str
         The job output directory
-
+    reference_template : str
+        The name of the reference template, which point to template
+        placement.json and rename-json.py files. Those two files are needed to
+        run guppy and convert the previously renamed tree back to orginal node
+        names.
+        Thus, this name and the according files need to be in sync with the
+        reference phylogeny/alignment that were used to produce placements!
     Returns
     -------
     str
         The phylogenetic insertion tree in Newick format.
     """
 
-    # The following files is the template for the input to the program guppy,
-    # however the list of placements is empty and needs to be filles with the
-    # actual placements. Included is the converted reference phylogeny
-    # (here for Greengenes 13.8). Conversion is necessary to esapce node names
-    # and imply a depth-first numbering of all nodes; otherwise guppy will fail
-    # or produce wrong results.
-    # Note to future developers: Once we allow alternative reference trees
-    # (besides Greenegens 13.8 99%), we also need to make sure the according
-    # template is used. You can generate a template by natively running
-    # run-sepp.sh with at least one sequence. One of the resulting files will
-    # end with the suffix placements.json. Edit this file by removing all
-    # placements, i.e. make it an empty list []. That's it!
-    FILE_PLC_TEMPLATE = join(
-        'support_files', 'sepp', 'placement_template.json')
-
     # create a valid placement.json file as input for guppy
-    with open(FILE_PLC_TEMPLATE, 'r') as f:
+    with open(join('support_files',
+                   'sepp',
+                   'tmpl_%s_placement.json' % reference_template), 'r') as f:
         plcmnts = json.loads(f.read())
         for sequence, placement in placements.items():
             plcmnts['placements'].append({'p': placement,
@@ -230,12 +224,33 @@ def generate_insertion_trees(placements, out_dir):
     with open(file_placements, 'w') as f:
         json.dump(plcmnts, f)
 
+    # execute guppy
+    file_tree_escaped = join(out_dir, 'insertion_tree.tre')
     fp_guppy = _get_guppy_binary()
     std_out, std_err, return_value = system_call(
-        '%s tog %s -o %s' %
-        (fp_guppy, file_placements, join(out_dir, 'insertion_tree.nwk'))
+        '%s tog %s -o %s' % (fp_guppy, file_placements, file_tree_escaped))
+    if return_value != 0:
+        error_msg = ("Error running guppy:\nStd out: %s\nStd err: %s"
+                     % (std_out, std_err))
+        raise ValueError(error_msg)
 
-    return ""
+    # execute node name re-labeling (to revert the escaping of names necessary
+    # for guppy)
+    file_tree = join(out_dir, 'insertion_tree.relabelled.tre')
+    std_out, std_err, return_value = system_call(
+        'cat %s | python %s > %s' %
+        (file_tree_escaped,
+         join('support_files', 'sepp',
+              'tmpl_%s_rename-json.py' % reference_template),
+         file_tree))
+    if return_value != 0:
+        error_msg = (("Error running tmpl_%s_rename-json.py:\n"
+                      "Std out: %s\nStd err: %s")
+                     % (reference_template, std_out, std_err))
+        raise ValueError(error_msg)
+
+    with open(file_tree, 'r') as f:
+        return "".join(f.readlines())
 
 
 def deblur(qclient, job_id, parameters, out_dir):
