@@ -11,12 +11,11 @@ from subprocess import Popen, PIPE
 
 from os import remove
 from os.path import join, abspath
-from shutil import rmtree
+from shutil import rmtree, which
 from tempfile import mkdtemp
 
 from qp_deblur.deblur import (generate_sepp_placements,
                               generate_insertion_trees,
-                              _get_guppy_binary,
                               _generate_template_rename)
 
 
@@ -233,7 +232,7 @@ class seppTests(TestCase):
             reference_rename=self.fp_ref_rename)
 
         # test if errors in rename script execution are catched
-        fp_sepp = _get_guppy_binary()
+        fp_sepp = which('guppy')
         self.assertRaisesRegex(
             ValueError,
             "Error running %s" % fp_sepp,
@@ -244,10 +243,6 @@ class seppTests(TestCase):
 
         # clean up
         rmtree(out_dir)
-
-    def test__get_guppy_binary(self):
-        obs = _get_guppy_binary()
-        self.assertTrue(obs.endswith('guppy'))
 
     def test__generate_template_rename(self):
         out_dir = mkdtemp()
