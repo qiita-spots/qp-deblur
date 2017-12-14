@@ -268,9 +268,8 @@ def generate_insertion_trees(placements, out_dir,
 
     # execute guppy
     file_tree_escaped = join(out_dir, 'insertion_tree.tre')
-    fp_guppy = _get_guppy_binary()
     std_out, std_err, return_value = system_call(
-        '%s tog %s -o %s' % (fp_guppy, file_placements, file_tree_escaped))
+        'guppy tog %s -o %s' % (file_placements, file_tree_escaped))
     if return_value != 0:
         error_msg = ("Error running guppy:\nStd out: %s\nStd err: %s"
                      % (std_out, std_err))
