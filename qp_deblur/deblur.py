@@ -7,8 +7,7 @@
 # -----------------------------------------------------------------------------
 
 from os import mkdir, environ
-from os.path import join, exists, split
-from shutil import which
+from os.path import join, exists
 from pkg_resources import Requirement, resource_filename
 
 from future.utils import viewitems
@@ -159,36 +158,6 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         raise ValueError(error_msg)
 
 
-def _get_guppy_binary():
-    """Find the right guppy binary.
-
-    Returns
-    -------
-    str : filepath of the guppy binary.
-
-    Raises
-    ------
-    ValueError if
-        a) grep'ing DIR in the run-sepp.sh script or
-        b) grep'ing pplacer path in main.config fails
-    """
-    # 1) locate sepp binary
-    fp_sepp_binary = which('run-sepp.sh')
-    # 2) obtain shared directory by grep'ing DIR from the run-sepp.sh script
-    std_out, _, return_value = system_call('grep "^DIR=" %s' % fp_sepp_binary)
-    if return_value != 0:
-        raise ValueError("Could not determine SEPP shared directory.")
-    fp_sepp_shared = std_out.split('=')[-1].strip()
-    # 3) grep'ing pplacer path
-    std_out, _, return_value = system_call(
-        'grep "\[pplacer\]" %s -A 1 | grep "path"' %
-        join(fp_sepp_shared, 'sepp', '.sepp', 'main.config'))
-    if return_value != 0:
-        raise ValueError("Could not determine SEPP bundled tool directory.")
-    fp_sepp_bundled = split(std_out.split('=')[-1].strip())[0]
-    return join(fp_sepp_bundled, 'guppy')
-
-
 def _generate_template_rename(file_reference_phylogeny,
                               file_reference_alignment,
                               out_dir):
@@ -276,7 +245,7 @@ def generate_insertion_trees(placements, out_dir,
     Returns
     -------
     str
-        The phylogenetic insertion tree in Newick format.
+        The filepath of the phylogenetic insertion tree in Newick format.
     """
 
     # create a valid placement.json file as input for guppy
@@ -326,8 +295,7 @@ def generate_insertion_trees(placements, out_dir,
                      % (file_ref_rename, std_out, std_err))
         raise ValueError(error_msg)
 
-    with open(file_tree, 'r') as f:
-        return "".join(f.readlines())
+    return file_tree
 
 
 def deblur(qclient, job_id, parameters, out_dir):
