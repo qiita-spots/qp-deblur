@@ -191,12 +191,14 @@ class seppTests(TestCase):
 
     def test_generate_insertion_trees(self):
         out_dir = mkdtemp()
-        tree = generate_insertion_trees(
+        file_tree = generate_insertion_trees(
             self.exp, out_dir,
             reference_template=self.fp_ref_template,
             reference_rename=self.fp_ref_rename)
-        for seq in self.seqs:
-            self.assertIn(seq, tree)
+        with open(file_tree, 'r') as f:
+            tree = "".join(f.readlines())
+            for seq in self.seqs:
+                self.assertIn(seq, tree)
         rmtree(out_dir)
 
     def test_generate_insertion_trees_errors(self):
