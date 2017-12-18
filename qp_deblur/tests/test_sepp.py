@@ -11,10 +11,12 @@ from subprocess import Popen, PIPE
 
 from os import remove
 from os.path import join, abspath
-from shutil import rmtree
+from shutil import rmtree, which
 from tempfile import mkdtemp
 
-from qp_deblur.deblur import (generate_sepp_placements)
+from qp_deblur.deblur import (generate_sepp_placements,
+                              generate_insertion_trees,
+                              _generate_template_rename)
 
 
 TESTPREFIX = 'foo'
@@ -140,6 +142,10 @@ class seppTests(TestCase):
                                              'reference_alignment_tiny.fasta'))
         self.fp_ref_phylogeny = abspath(join('support_files', 'sepp',
                                              'reference_phylogeny_tiny.nwk'))
+        self.fp_ref_template = abspath(join('support_files', 'sepp',
+                                            'tmpl_tiny_placement.json'))
+        self.fp_ref_rename = abspath(join('support_files', 'sepp',
+                                          'tmpl_tiny_rename-json.py'))
 
     def test_generate_sepp_placements(self):
         out_dir = mkdtemp()
@@ -181,6 +187,114 @@ class seppTests(TestCase):
             ['389734897639'], out_dir, 1,
             reference_alignment=self.fp_ref_alignment,
             reference_phylogeny=self.fp_ref_phylogeny)
+
+    def test_generate_insertion_trees(self):
+        out_dir = mkdtemp()
+        file_tree = generate_insertion_trees(
+            self.exp, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=self.fp_ref_rename)
+        with open(file_tree, 'r') as f:
+            tree = "".join(f.readlines())
+            for seq in self.seqs:
+                self.assertIn(seq, tree)
+        rmtree(out_dir)
+
+    def test_generate_insertion_trees_errors(self):
+        out_dir = mkdtemp()
+
+        # test if missing template file is catched
+        file_missing = '/dev/notthere'
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference template '%s' does not exits!" % file_missing,
+            generate_insertion_trees,
+            self.exp, out_dir,
+            reference_template=file_missing,
+            reference_rename=self.fp_ref_rename)
+
+        # test if missing rename script file is catched
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference rename script does not exits!",
+            generate_insertion_trees,
+            self.exp, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=file_missing)
+
+        # test if errors in guppy execution are catched
+        self.assertRaisesRegex(
+            ValueError,
+            "Error running guppy",
+            generate_insertion_trees,
+            {"acgauugac": ["this is wrong"]}, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=self.fp_ref_rename)
+
+        # test if errors in rename script execution are catched
+        fp_sepp = which('guppy')
+        self.assertRaisesRegex(
+            ValueError,
+            "Error running %s" % fp_sepp,
+            generate_insertion_trees,
+            self.exp, out_dir,
+            reference_template=self.fp_ref_template,
+            reference_rename=fp_sepp)
+
+        # clean up
+        rmtree(out_dir)
+
+    def test__generate_template_rename(self):
+        out_dir = mkdtemp()
+        obs = _generate_template_rename(self.fp_ref_phylogeny,
+                                        self.fp_ref_alignment,
+                                        out_dir)
+        self.assertIn('tmpl_dummy_placement.json', obs[0])
+        self.assertIn('dummy_rename-json.py', obs[1])
+
+        rmtree(out_dir)
+
+    def test__generate_template_rename_errors(self):
+        out_dir = mkdtemp()
+        file_missing = '/dev/notthere'
+
+        # non existing out_dir
+        self.assertRaisesRegex(
+            ValueError,
+            "Output directory '%s' does not exist!" % file_missing,
+            _generate_template_rename,
+            self.fp_ref_phylogeny,
+            self.fp_ref_alignment,
+            file_missing)
+
+        # non existing phylogeny
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference phylogeny file '%s' does not exits!" % file_missing,
+            _generate_template_rename,
+            file_missing,
+            self.fp_ref_alignment,
+            out_dir)
+
+        # non existing alignment
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference alignment file '%s' does not exits!" % file_missing,
+            _generate_template_rename,
+            self.fp_ref_phylogeny,
+            file_missing,
+            out_dir)
+
+        # failing SEPP run
+        self.assertRaisesRegex(
+            ValueError,
+            "Error running SEPP",
+            _generate_template_rename,
+            self.fp_ref_alignment,
+            self.fp_ref_phylogeny,
+            out_dir)
+
+        rmtree(out_dir)
 
 
 if __name__ == '__main__':

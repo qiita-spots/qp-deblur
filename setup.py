@@ -9,6 +9,7 @@
 # -----------------------------------------------------------------------------
 
 from setuptools import setup
+from setuptools.command.install import install
 
 __version__ = "1.0.3"
 
@@ -24,6 +25,24 @@ classes = """
     Operating System :: POSIX :: Linux
     Operating System :: MacOS :: MacOS X
 """
+
+
+class PostInstallCommand(install):
+    """Post-installation for installation mode."""
+    def run(self):
+        import shutil
+        import os
+
+        install.run(self)
+
+        assets_dir = os.path.join(self.install_libbase, 'qp_deblur/assets/')
+        if not os.path.exists(assets_dir):
+            os.mkdir(assets_dir)
+
+        shutil.copy(os.path.join('support_files', 'sepp',
+                                 'tmpl_gg13.8-99_placement.json'), assets_dir)
+        shutil.copy(os.path.join('support_files', 'sepp',
+                                 'tmpl_gg13.8-99_rename-json.py'), assets_dir)
 
 
 with open('README.rst') as f:
@@ -47,4 +66,5 @@ setup(name='qp-deblur',
       dependency_links=[
           ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
            'egg=qiita-files-0.1.0-dev')],
-      classifiers=classifiers)
+      classifiers=classifiers,
+      cmdclass={'install': PostInstallCommand})
