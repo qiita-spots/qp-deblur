@@ -43,8 +43,9 @@ script:
   - source activate deblur-1.0.3
   - sleep 10 # give enough time to the webserver to start
   - configure_deblur --env-script "source activate deblur-1.0.3" --server-cert $QIITA_SERVER_CERT
-  - nosetests --with-doctest --with-coverage --cover-package=qp_deblur
-  - flake8 qp_deblur setup.py scripts
+  - pip freeze
+  #- nosetests --with-doctest --with-coverage --cover-package=qp_deblur
+  #- flake8 qp_deblur setup.py scripts
 addons:
   postgresql: "9.3"
 services:
