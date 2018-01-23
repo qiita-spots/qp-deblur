@@ -36,7 +36,8 @@ DEBLUR_PARAMS = {
     'Minimum dataset-wide read threshold': 'min-reads',
     'Minimum per-sample read threshold': 'min-size',
     'Threads per sample': 'threads-per-sample',
-    'Jobs to start': 'jobs-to-start'}
+    'Jobs to start': 'jobs-to-start',
+    'Reference phylogeny for SEPP': 'Greengenes_13.8'}
 
 
 def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
@@ -65,7 +66,10 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
         raise ValueError("deblur doesn't accept more than one filepath: "
                          "%s" % ', '.join(preprocessed_fp))
 
-    translated_params = {DEBLUR_PARAMS[k]: v for k, v in parameters.items()}
+    translated_params = {DEBLUR_PARAMS[k]: v
+                         for k, v
+                         in parameters.items()
+                         if k != 'Reference phylogeny for SEPP'}
     params = OrderedDict(sorted(translated_params.items(), key=lambda t: t[0]))
     params = ['--%s "%s"' % (k, v) if v is not True else '--%s' % k
               for k, v in viewitems(params) if v != 'default']
@@ -415,19 +419,53 @@ def deblur(qclient, job_id, parameters, out_dir):
             f.write("")
 
     # Step 4, communicate with archive to check and generate placements
-    qclient.update_job_step(job_id, "Step 4 of 4 (1/2): Retriving "
+    qclient.update_job_step(job_id, "Step 4 of 4 (1/3): Retriving "
                             "observations information")
     features = list(load_table(final_biom_hit).ids(axis='observation'))
     if features:
         observations = qclient.post(
             "/qiita_db/archive/observations/", data={'job_id': job_id,
                                                      'features': features})
-        no_placements = [k for k, v in observations.items() if v == '']
-        qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
-                                "placements" % len(no_placements))
+        novel_fragments = list(set(features) - set(observations.keys()))
+
+        qclient.update_job_step(job_id, "Step 4 of 4 (2/3): Generating %d new "
+                                "placements" % len(novel_fragments))
         try:
+            # Once we support alternative reference phylogenies for SEPP in the
+            # future, we need to translate the reference name here into
+            # filepaths pointing to the correct reference alignment and
+            # reference tree. If left 'None' the Greengenes 13.8 reference
+            # shipped with the fragment-insertion conda package will be used.
+            fp_reference_alignment = None
+            fp_reference_phylogeny = None
+            if parameters['Reference phylogeny for SEPP'] == 'tiny':
+                fp_reference_alignment = resource_filename(
+                    Requirement.parse('qp-deblur'),
+                    'support_files/sepp/reference_alignment_tiny.fasta')
+                fp_reference_phylogeny = resource_filename(
+                    Requirement.parse('qp-deblur'),
+                    'support_files/sepp/reference_phylogeny_tiny.nwk')
             new_placements = generate_sepp_placements(
-                no_placements, out_dir, parameters['Threads per sample'])
+                novel_fragments, out_dir, parameters['Threads per sample'],
+                reference_alignment=fp_reference_alignment,
+                reference_phylogeny=fp_reference_phylogeny)
+            qclient.update_job_step(job_id, "Step 4 of 4 (3/3): Archiving %d "
+                                    "new placements" % len(novel_fragments))
+            # values needs to be json strings as well
+            for fragment in new_placements.keys():
+                new_placements[fragment] = json.dumps(new_placements[fragment])
+
+            # fragments that get rejected by a SEPP run don't show up in
+            # the placement file, however being rejected is a valuable
+            # information and should be stored in the archive as well.
+            # Thus, we avoid re-computation for rejected fragments in the
+            # future.
+            for fragment in novel_fragments:
+                if fragment not in new_placements:
+                    new_placements[fragment] = ""
+
+            qclient.patch(url="/qiita_db/archive/observations/", op="add",
+                          path=job_id, value=json.dumps(new_placements))
         except ValueError as e:
             return False, None, str(e)
     else:
