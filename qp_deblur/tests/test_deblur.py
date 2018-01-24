@@ -39,7 +39,8 @@ class deblurTests(PluginTestCase):
             'Sequence trim length (-1 for no trimming)': 100,
             'Minimum dataset-wide read threshold': 0,
             'Minimum per-sample read threshold': 2,
-            'Threads per sample': 1, 'Jobs to start': 1}
+            'Threads per sample': 1, 'Jobs to start': 1,
+            'Reference phylogeny for SEPP': 'Greengenes_13.8'}
         self._clean_up_files = []
 
     def tearDown(self):
