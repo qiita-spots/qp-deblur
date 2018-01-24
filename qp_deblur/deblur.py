@@ -438,13 +438,14 @@ def deblur(qclient, job_id, parameters, out_dir):
             # shipped with the fragment-insertion conda package will be used.
             fp_reference_alignment = None
             fp_reference_phylogeny = None
-            if parameters['Reference phylogeny for SEPP'] == 'tiny':
-                fp_reference_alignment = resource_filename(
-                    Requirement.parse('qp-deblur'),
-                    'support_files/sepp/reference_alignment_tiny.fasta')
-                fp_reference_phylogeny = resource_filename(
-                    Requirement.parse('qp-deblur'),
-                    'support_files/sepp/reference_phylogeny_tiny.nwk')
+            if 'Reference phylogeny for SEPP' in parameters:
+                if parameters['Reference phylogeny for SEPP'] == 'tiny':
+                    fp_reference_alignment = resource_filename(
+                        Requirement.parse('qp-deblur'),
+                        'support_files/sepp/reference_alignment_tiny.fasta')
+                    fp_reference_phylogeny = resource_filename(
+                        Requirement.parse('qp-deblur'),
+                        'support_files/sepp/reference_phylogeny_tiny.nwk')
             new_placements = generate_sepp_placements(
                 novel_fragments, out_dir, parameters['Threads per sample'],
                 reference_alignment=fp_reference_alignment,
