@@ -10,7 +10,7 @@ from unittest import main
 from os import close, remove
 from shutil import copyfile, rmtree
 from tempfile import mkstemp, mkdtemp
-from json import dumps
+from json import dumps, load
 from os.path import exists, isdir, join
 
 from qiita_client.testing import PluginTestCase
@@ -42,6 +42,17 @@ class deblurTests(PluginTestCase):
             'Threads per sample': 1, 'Jobs to start': 1,
             'Reference phylogeny for SEPP': 'Greengenes_13.8'}
         self._clean_up_files = []
+
+        # to prevent test from timing out, we need to pre-populate the archive
+        # with placements for Deblur fragments to avoid long running SEPP.
+        # Therefore, we need a job-id to infer merging scheme which can only be
+        # done after demultiplexing job is created. Thus, actuall population
+        # needs to be done within the test.
+        self.features = dict()
+        with open('support_files/sepp/placements.json', 'r') as f:
+            for placement in load(f)['placements']:
+                self.features[placement['nm'][0][0]] = \
+                    dumps(placement['p'])
 
     def tearDown(self):
         for fp in self._clean_up_files:
@@ -107,6 +118,10 @@ class deblurTests(PluginTestCase):
         out_dir = mkdtemp()
         self._clean_up_files.append(out_dir)
 
+        # pre-populate archive with fragment placements
+        self.qclient.patch(url="/qiita_db/archive/observations/",
+                           op="add", path=jid,
+                           value=dumps(self.features))
         success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
 
         self.assertEqual("", msg)
@@ -161,6 +176,10 @@ class deblurTests(PluginTestCase):
         out_dir = mkdtemp()
         self._clean_up_files.append(out_dir)
 
+        # pre-populate archive with fragment placements
+        self.qclient.patch(url="/qiita_db/archive/observations/",
+                           op="add", path=jid,
+                           value=dumps(self.features))
         success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
 
         self.assertEqual("", msg)
