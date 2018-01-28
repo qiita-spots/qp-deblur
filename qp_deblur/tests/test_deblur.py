@@ -137,7 +137,9 @@ class deblurTests(PluginTestCase):
         self.assertEqual(
             [(join(out_dir, 'deblur_out', 'reference-hit.biom'), 'biom'),
              (join(out_dir, 'deblur_out', 'reference-hit.seqs.fa'),
-              'preprocessed_fasta')], ainfo[1].files)
+              'preprocessed_fasta'),
+             (join(out_dir, 'deblur_out', 'insertion_tree.relabelled.tre'),
+              'plain_text')], ainfo[1].files)
 
     def test_deblur_demux(self):
         # generating filepaths
@@ -196,8 +198,10 @@ class deblurTests(PluginTestCase):
             [(join(out_dir, 'deblur_out', 'deblured', 'reference-hit.biom'),
               'biom'),
              (join(out_dir, 'deblur_out', 'deblured',
-                   'reference-hit.seqs.fa'),
-              'preprocessed_fasta')], ainfo[1].files)
+                   'reference-hit.seqs.fa'), 'preprocessed_fasta')
+             (join(out_dir, 'deblur_out', 'insertion_tree.relabelled.tre'),
+              'plain_text'),
+             ], ainfo[1].files)
 
 
 if __name__ == '__main__':
