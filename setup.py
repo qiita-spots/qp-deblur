@@ -39,10 +39,14 @@ class PostInstallCommand(install):
         if not os.path.exists(assets_dir):
             os.mkdir(assets_dir)
 
-        shutil.copy(os.path.join('support_files', 'sepp',
-                                 'tmpl_gg13.8-99_placement.json'), assets_dir)
-        shutil.copy(os.path.join('support_files', 'sepp',
-                                 'tmpl_gg13.8-99_rename-json.py'), assets_dir)
+        for filename in [('tmpl_gg13.8-99_placement.json',
+                          'tmpl_gg13.8-99_rename-json.py',
+                          'reference_alignment_tiny.fasta'
+                          'reference_phylogeny_tiny.nwk'
+                          'tmpl_tiny_placement.json'
+                          'tmpl_tiny_rename-json.py')]:
+            shutil.copy(os.path.join('support_files', 'sepp', filename),
+                        assets_dir)
 
 
 with open('README.rst') as f:
