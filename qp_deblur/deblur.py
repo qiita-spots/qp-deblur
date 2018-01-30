@@ -447,16 +447,16 @@ def deblur(qclient, job_id, parameters, out_dir):
                 if parameters['Reference phylogeny for SEPP'] == 'tiny':
                     fp_reference_alignment = resource_filename(
                         Requirement.parse('qp-deblur'),
-                        'support_files/sepp/reference_alignment_tiny.fasta')
+                        'qp_deblur/assets/reference_alignment_tiny.fasta')
                     fp_reference_phylogeny = resource_filename(
                         Requirement.parse('qp-deblur'),
-                        'support_files/sepp/reference_phylogeny_tiny.nwk')
+                        'qp_deblur/assets/reference_phylogeny_tiny.nwk')
                     fp_reference_template = resource_filename(
                         Requirement.parse('qp-deblur'),
-                        'support_files/sepp/tmpl_tiny_placement.json')
+                        'qp_deblur/assets/tmpl_tiny_placement.json')
                     fp_reference_rename = resource_filename(
                         Requirement.parse('qp-deblur'),
-                        'support_files/sepp/tmpl_tiny_rename-json.py')
+                        'qp_deblur/assets/tmpl_tiny_rename-json.py')
 
             new_placements = generate_sepp_placements(
                 novel_fragments, out_dir, parameters['Threads per sample'],
