@@ -110,7 +110,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.0.3', 'Deblur']),
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -138,8 +138,7 @@ class deblurTests(PluginTestCase):
             [(join(out_dir, 'deblur_out', 'reference-hit.biom'), 'biom'),
              (join(out_dir, 'deblur_out', 'reference-hit.seqs.fa'),
               'preprocessed_fasta'),
-             (join(out_dir, 'deblur_out', 'insertion_tree.relabelled.tre'),
-              'plain_text')], ainfo[1].files)
+             (None, 'plain_text')], ainfo[1].files)
 
     def test_deblur_demux(self):
         # generating filepaths
@@ -170,7 +169,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.0.3', 'Deblur']),
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -194,13 +193,15 @@ class deblurTests(PluginTestCase):
             [(join(out_dir, 'deblur_out', 'deblured', 'all.biom'), 'biom'),
              (join(out_dir, 'deblur_out', 'deblured', 'all.seqs.fa'),
               'preprocessed_fasta')], ainfo[0].files)
+
         self.assertEqual(
             [(join(out_dir, 'deblur_out', 'deblured', 'reference-hit.biom'),
               'biom'),
              (join(out_dir, 'deblur_out', 'deblured',
-                   'reference-hit.seqs.fa'), 'preprocessed_fasta')
-             (join(out_dir, 'deblur_out', 'insertion_tree.relabelled.tre'),
-              'plain_text'),
+                   'reference-hit.seqs.fa'), 'preprocessed_fasta'),
+             (join(out_dir, 'deblur_out', 'deblured',
+                   'insertion_tree.relabelled.tre'),
+              'plain_text')
              ], ainfo[1].files)
 
 

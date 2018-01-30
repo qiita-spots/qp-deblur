@@ -11,7 +11,7 @@
 from setuptools import setup
 from setuptools.command.install import install
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 classes = """
     Development Status :: 3 - Alpha
