@@ -15,7 +15,7 @@ __all__ = ['deblur']
 
 # Initialize the plugin
 plugin = QiitaPlugin(
-    'deblur', '1.0.3', 'A greedy deconvolution algorithm based on Illumina '
+    'deblur', '1.0.4', 'A greedy deconvolution algorithm based on Illumina '
     'Miseq/Hiseq error profiles')
 
 # Define the deblur-workflow command
@@ -42,7 +42,9 @@ opt_params = {
     'Minimum dataset-wide read threshold': ['integer', '0'],
     'Minimum per-sample read threshold': ['integer', '2'],
     'Threads per sample': ['integer', '1'],
-    'Jobs to start': ['integer', '1']
+    'Jobs to start': ['integer', '1'],
+    'Reference phylogeny for SEPP': ['choice:["Greengenes_13.8"]',
+                                     'Greengenes_13.8']
 }
 outputs = {'deblur final table': 'BIOM',
            'deblur reference hit table': 'BIOM'}
@@ -64,7 +66,8 @@ dflt_param_set = {
                  # run
                  'Minimum dataset-wide read threshold': 0,
                  'Minimum per-sample read threshold': 2,
-                 'Threads per sample': 1, 'Jobs to start': 1}
+                 'Threads per sample': 1, 'Jobs to start': 1,
+                 'Reference phylogeny for SEPP': 'Greengenes_13.8'}
 }
 deblur_cmd = QiitaCommand(
     "Deblur", "deblurring workflow", deblur, req_params, opt_params,

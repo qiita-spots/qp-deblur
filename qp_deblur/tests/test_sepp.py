@@ -216,7 +216,7 @@ class seppTests(TestCase):
         # test if missing rename script file is catched
         self.assertRaisesRegex(
             ValueError,
-            "Reference rename script does not exits!",
+            "Reference rename script '%s' does not exits!" % file_missing,
             generate_insertion_trees,
             self.exp, out_dir,
             reference_template=self.fp_ref_template,

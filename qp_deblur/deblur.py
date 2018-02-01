@@ -36,7 +36,8 @@ DEBLUR_PARAMS = {
     'Minimum dataset-wide read threshold': 'min-reads',
     'Minimum per-sample read threshold': 'min-size',
     'Threads per sample': 'threads-per-sample',
-    'Jobs to start': 'jobs-to-start'}
+    'Jobs to start': 'jobs-to-start',
+    'Reference phylogeny for SEPP': 'Greengenes_13.8'}
 
 
 def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
@@ -65,7 +66,10 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
         raise ValueError("deblur doesn't accept more than one filepath: "
                          "%s" % ', '.join(preprocessed_fp))
 
-    translated_params = {DEBLUR_PARAMS[k]: v for k, v in parameters.items()}
+    translated_params = {DEBLUR_PARAMS[k]: v
+                         for k, v
+                         in parameters.items()
+                         if k != 'Reference phylogeny for SEPP'}
     params = OrderedDict(sorted(translated_params.items(), key=lambda t: t[0]))
     params = ['--%s "%s"' % (k, v) if v is not True else '--%s' % k
               for k, v in viewitems(params) if v != 'default']
@@ -274,7 +278,8 @@ def generate_insertion_trees(placements, out_dir,
     if reference_rename is not None:
         file_ref_rename = reference_rename
     if not exists(file_ref_rename):
-        raise ValueError("Reference rename script does not exits!")
+        raise ValueError("Reference rename script '%s' does not exits!" %
+                         file_ref_rename)
 
     # create a valid placement.json file as input for guppy
     file_ref_template = resource_filename(
@@ -415,19 +420,87 @@ def deblur(qclient, job_id, parameters, out_dir):
             f.write("")
 
     # Step 4, communicate with archive to check and generate placements
-    qclient.update_job_step(job_id, "Step 4 of 4 (1/2): Retriving "
+    qclient.update_job_step(job_id, "Step 4 of 4 (1/4): Retriving "
                             "observations information")
     features = list(load_table(final_biom_hit).ids(axis='observation'))
+
+    fp_phylogeny = None
     if features:
         observations = qclient.post(
             "/qiita_db/archive/observations/", data={'job_id': job_id,
                                                      'features': features})
-        no_placements = [k for k, v in observations.items() if v == '']
-        qclient.update_job_step(job_id, "Step 4 of 4 (2/2): Generating %d new "
-                                "placements" % len(no_placements))
+        novel_fragments = list(set(features) - set(observations.keys()))
+
+        qclient.update_job_step(job_id, "Step 4 of 4 (2/4): Generating %d new "
+                                "placements" % len(novel_fragments))
+
+        # Once we support alternative reference phylogenies for SEPP in the
+        # future, we need to translate the reference name here into
+        # filepaths pointing to the correct reference alignment and
+        # reference tree. If left 'None' the Greengenes 13.8 reference
+        # shipped with the fragment-insertion conda package will be used.
+        fp_reference_alignment = None
+        fp_reference_phylogeny = None
+        fp_reference_template = None
+        fp_reference_rename = None
+        if 'Reference phylogeny for SEPP' in parameters:
+            if parameters['Reference phylogeny for SEPP'] == 'tiny':
+                fp_reference_alignment = resource_filename(
+                    Requirement.parse('qp-deblur'),
+                    'qp_deblur/assets/reference_alignment_tiny.fasta')
+                fp_reference_phylogeny = resource_filename(
+                    Requirement.parse('qp-deblur'),
+                    'qp_deblur/assets/reference_phylogeny_tiny.nwk')
+                fp_reference_template = resource_filename(
+                    Requirement.parse('qp-deblur'),
+                    'qp_deblur/assets/tmpl_tiny_placement.json')
+                fp_reference_rename = resource_filename(
+                    Requirement.parse('qp-deblur'),
+                    'qp_deblur/assets/tmpl_tiny_rename-json.py')
         try:
             new_placements = generate_sepp_placements(
-                no_placements, out_dir, parameters['Threads per sample'])
+                novel_fragments, out_dir, parameters['Threads per sample'],
+                reference_alignment=fp_reference_alignment,
+                reference_phylogeny=fp_reference_phylogeny)
+        except ValueError as e:
+            return False, None, str(e)
+
+        qclient.update_job_step(job_id, "Step 4 of 4 (3/4): Archiving %d "
+                                "new placements" % len(novel_fragments))
+        # values needs to be json strings as well
+        for fragment in new_placements.keys():
+            new_placements[fragment] = json.dumps(new_placements[fragment])
+
+        # fragments that get rejected by a SEPP run don't show up in
+        # the placement file, however being rejected is a valuable
+        # information and should be stored in the archive as well.
+        # Thus, we avoid re-computation for rejected fragments in the
+        # future.
+        for fragment in novel_fragments:
+            if fragment not in new_placements:
+                new_placements[fragment] = ""
+        if len(new_placements.keys()) > 0:
+            qclient.patch(url="/qiita_db/archive/observations/", op="add",
+                          path=job_id, value=json.dumps(new_placements))
+
+        # retrieve all fragments and create actuall tree
+        qclient.update_job_step(job_id, "Step 4 of 4 (4/4): Composing "
+                                "phylogenetic insertion tree")
+        placements = qclient.post(
+            "/qiita_db/archive/observations/", data={'job_id': job_id,
+                                                     'features': features})
+        # remove fragments that have been rejected by SEPP, i.e. whoes
+        # placement is the empty string and
+        # convert all other placements from string to json
+        for frag, plc in placements.items():
+            if plc == '':
+                del placements[frag]
+            placements[frag] = json.loads(placements[frag])
+        try:
+            fp_phylogeny = generate_insertion_trees(
+                placements, out_dir,
+                reference_template=fp_reference_template,
+                reference_rename=fp_reference_rename)
         except ValueError as e:
             return False, None, str(e)
     else:
@@ -438,7 +511,8 @@ def deblur(qclient, job_id, parameters, out_dir):
                            (final_seqs, 'preprocessed_fasta')]),
              ArtifactInfo('deblur reference hit table', 'BIOM',
                           [(final_biom_hit, 'biom'),
-                           (final_seqs_hit, 'preprocessed_fasta')],
+                           (final_seqs_hit, 'preprocessed_fasta'),
+                           (fp_phylogeny, 'plain_text')],
                           new_placements)]
 
     return True, ainfo, ""
