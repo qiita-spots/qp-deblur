@@ -323,21 +323,6 @@ def generate_insertion_trees(placements, out_dir,
                      % (file_ref_rename, std_out, std_err))
         raise ValueError(error_msg)
 
-    # this seems to lead to a much higher runtime for skbio parsing?!?
-    # workaround for unrooted default phylogeny:
-    # Beta-diversity computation with Qiime2 requires every branch to have a
-    # length, which is not necessarily true for SEPP produced insertion trees.
-    # Thus we add zero branch length information for branches without an
-    # explicit length.
-    # with open(file_tree, 'r') as f:
-    #     tree_content = ''.join(f.readlines())
-    # # add zero branch length
-    # tree_content = tree_content.replace("'k__Bacteria');",
-    #                                     "'k__Bacteria':0.0);")
-    # with open(file_tree, 'w') as f:
-    #     f.write(tree_content)
-    import sys
-    sys.stderr.write('GENERATE TREE >%s<\n' % file_tree)
     return file_tree
 
 
