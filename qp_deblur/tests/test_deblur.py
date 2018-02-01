@@ -7,11 +7,12 @@
 # -----------------------------------------------------------------------------
 
 from unittest import main
-from os import close, remove
+from os import close, remove, chmod
 from shutil import copyfile, rmtree
 from tempfile import mkstemp, mkdtemp
 from json import dumps, load
 from os.path import exists, isdir, join
+from os import environ
 
 from qiita_client.testing import PluginTestCase
 
@@ -54,7 +55,12 @@ class deblurTests(PluginTestCase):
                 self.features[placement['nm'][0][0]] = \
                     dumps(placement['p'])
 
+        # saving current value of PATH
+        self.oldpath = environ['PATH']
+
     def tearDown(self):
+        # restore eventually changed PATH env var
+        environ['PATH'] = self.oldpath
         for fp in self._clean_up_files:
             if exists(fp):
                 if isdir(fp):
@@ -203,6 +209,154 @@ class deblurTests(PluginTestCase):
                    'insertion_tree.relabelled.tre'),
               'plain_text')
              ], ainfo[1].files)
+
+    def test_deblur_failingbin(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
+
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB7.640196': {'description_prep': 'SKB7'},
+            'SKB8.640193': {'description_prep': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': '16S'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_demux')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['Demultiplexed sequences'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        # create a fake deblur binary that will always fail
+        fp_fake_deblur = join(out_dir, 'deblur')
+        with open(fp_fake_deblur, 'w') as f:
+            f.write('#!/bin/bash\nexit 123\n')
+        chmod(fp_fake_deblur, 0o775)
+        environ['PATH'] = '%s:%s' % (out_dir, self.oldpath)
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+        self.assertFalse(success)
+        self.assertEqual(ainfo, None)
+        self.assertIn('Error running deblur', msg)
+
+    def test_deblur_failing_sepp(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
+
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB7.640196': {'description_prep': 'SKB7'},
+            'SKB8.640193': {'description_prep': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': '16S'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_demux')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['Demultiplexed sequences'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        # create a fake sepp binary that will always fail
+        fp_fake_sepp = join(out_dir, 'run-sepp.sh')
+        with open(fp_fake_sepp, 'w') as f:
+            f.write('#!/bin/bash\nexit 123\n')
+        chmod(fp_fake_sepp, 0o775)
+        environ['PATH'] = '%s:%s' % (out_dir, self.oldpath)
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+        self.assertFalse(success)
+        self.assertEqual(ainfo, None)
+        self.assertIn('Error running run-sepp.sh', msg)
+
+    def test_deblur_failing_guppy(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
+
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB7.640196': {'description_prep': 'SKB7'},
+            'SKB8.640193': {'description_prep': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': '16S'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_demux')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['Demultiplexed sequences'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        # pre-populate archive with fragment placements
+        self.qclient.patch(url="/qiita_db/archive/observations/",
+                           op="add", path=jid,
+                           value=dumps(self.features))
+        # create a fake guppy binary that will always fail
+        fp_fake_guppy = join(out_dir, 'guppy')
+        with open(fp_fake_guppy, 'w') as f:
+            f.write('#!/bin/bash\nexit 123\n')
+        chmod(fp_fake_guppy, 0o775)
+        environ['PATH'] = '%s:%s' % (out_dir, self.oldpath)
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+        self.assertFalse(success)
+        self.assertEqual(ainfo, None)
+        self.assertIn('Error running guppy', msg)
 
 
 if __name__ == '__main__':
