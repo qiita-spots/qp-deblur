@@ -132,7 +132,7 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     # perform SEPP and move back to the stored cwd for a clean state
     curr_pwd = environ['PWD']
     std_out, std_err, return_value = system_call(
-        'cd %s && run-sepp.sh %s %s -x %i %s %s; cd %s' %
+        'cd %s && run-sepp.sh %s %s -x %s %s %s; cd %s' %
         (out_dir, file_input, run_name, threads,
          param_phylogeny, param_alignment, curr_pwd))
 
