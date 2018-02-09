@@ -492,11 +492,10 @@ def deblur(qclient, job_id, parameters, out_dir):
         # remove fragments that have been rejected by SEPP, i.e. whoes
         # placement is the empty string and
         # convert all other placements from string to json
-        for frag, plc in placements.items():
-            if plc == '':
-                del placements[frag]
-            else:
-                placements[frag] = json.loads(placements[frag])
+        placements = {frag: json.loads(placements[frag])
+                      for frag, plc
+                      in placements.items()
+                      if plc != ''}
         try:
             fp_phylogeny = generate_insertion_trees(
                 placements, out_dir,
