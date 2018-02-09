@@ -495,7 +495,8 @@ def deblur(qclient, job_id, parameters, out_dir):
         for frag, plc in placements.items():
             if plc == '':
                 del placements[frag]
-            placements[frag] = json.loads(placements[frag])
+            else:
+                placements[frag] = json.loads(placements[frag])
         try:
             fp_phylogeny = generate_insertion_trees(
                 placements, out_dir,
