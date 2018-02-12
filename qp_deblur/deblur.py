@@ -20,7 +20,6 @@ from qiita_client import ArtifactInfo
 from qiita_client.util import system_call
 
 from qiita_files.demux import to_per_sample_files
-#from qp_deblur import get_data
 import qp_deblur
 
 
