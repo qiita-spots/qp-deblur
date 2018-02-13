@@ -51,7 +51,7 @@ BEGIN
 
     END LOOP;
     UPDATE qiita.command_parameter
-      SET check_biom_merge
+      SET check_biom_merge = True
       WHERE parameter_name = 'Reference phylogeny for SEPP'
         AND command_id=new_deblur_id;
 END $do$;
