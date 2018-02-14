@@ -13,12 +13,12 @@ BEGIN
     SELECT command_id INTO old_deblur_id
         FROM qiita.software_command sc
             JOIN qiita.software s USING (software_id)
-        WHERE s.name = 'deblur' AND s.version = '1.0.3' AND sc.name = 'deblur';
+        WHERE s.name = 'deblur' AND s.version = '1.0.3' AND sc.name = 'Deblur';
 
     SELECT command_id INTO new_deblur_id
         FROM qiita.software_command sc
             JOIN qiita.software s USING (software_id)
-        WHERE s.name = 'deblur' AND s.version = '1.0.4' AND sc.name = 'deblur';
+        WHERE s.name = 'deblur' AND s.version = '1.0.4' AND sc.name = 'Deblur';
 
 
     FOR a_info IN
@@ -46,12 +46,17 @@ BEGIN
             WHERE processing_job_id = pj_id;
 
         UPDATE qiita.artifact
-            SET command_parameters = params
+            SET command_parameters = params, command_id = new_deblur_id
             WHERE artifact_id = a_info.artifact_id;
 
     END LOOP;
+
     UPDATE qiita.command_parameter
       SET check_biom_merge = True
       WHERE parameter_name = 'Reference phylogeny for SEPP'
         AND command_id=new_deblur_id;
+
+    UPDATE qiita.command_output
+      SET check_biom_merge = True
+      WHERE command_id=new_deblur_id;
 END $do$;
