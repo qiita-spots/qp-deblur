@@ -28,9 +28,9 @@ for a in artifacts:
                 current = t.ids('observation')
                 updated = map(lambda x: x.upper(), current)
                 if len(set(updated)) != len(updated):
-                    print ('************>', a.id, fp, '<**************')
+                    print('************>', a.id, fp, '<**************')
                 if set(current) ^ set(updated):
-                    print 'Changing biom: ', a.id, fp
+                    print('Changing biom: ', a.id, fp)
                     t.update_ids({i: i.upper() for i in t.ids('observation')},
                                  axis='observation', inplace=True)
                     with biom_open(fp, 'w') as f:
@@ -47,7 +47,7 @@ for a in artifacts:
                         if seq != sequ:
                             changed = True
                 if changed:
-                    print 'Changing biom: ', a.id, fp
+                    print('Changing biom: ', a.id, fp)
                     rename(tmp, fp)
                     checksum = compute_checksum(fp)
                 else:

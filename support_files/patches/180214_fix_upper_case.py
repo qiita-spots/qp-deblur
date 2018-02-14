@@ -41,7 +41,7 @@ for a in artifacts:
         updated = set(map(lambda x: x.upper(), current))
         difference = current ^ updated
         if difference:
-            print ('*********>\nChanging biom: ', a.id, biom)
+            print('*********>\nChanging biom: ', a.id, biom)
             # checking for duplicated ids
             if len(current) != len(updated):
                 duplicates = defaultdict(list)
