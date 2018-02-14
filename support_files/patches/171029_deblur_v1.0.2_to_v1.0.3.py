@@ -28,7 +28,7 @@ for a in artifacts:
                 current = t.ids('observation')
                 updated = map(lambda x: x.upper(), current)
                 if len(set(updated)) != len(updated):
-                    print '************>', a.id, fp, '<**************'
+                    print ('************>', a.id, fp, '<**************')
                 if set(current) ^ set(updated):
                     print 'Changing biom: ', a.id, fp
                     t.update_ids({i: i.upper() for i in t.ids('observation')},
