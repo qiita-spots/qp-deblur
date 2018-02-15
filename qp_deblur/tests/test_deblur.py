@@ -16,7 +16,6 @@ from os import environ
 
 from qiita_client.testing import PluginTestCase
 
-
 from qp_deblur import plugin
 from qp_deblur.deblur import (
     deblur, generate_deblur_workflow_commands)

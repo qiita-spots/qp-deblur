@@ -8,7 +8,6 @@
 
 from os import mkdir, environ
 from os.path import join, exists
-from pkg_resources import Requirement, resource_filename
 
 from future.utils import viewitems
 from functools import partial
@@ -21,6 +20,7 @@ from qiita_client import ArtifactInfo
 from qiita_client.util import system_call
 
 from qiita_files.demux import to_per_sample_files
+import qp_deblur
 
 
 DEBLUR_PARAMS = {
@@ -272,9 +272,8 @@ def generate_insertion_trees(placements, out_dir,
         c) or the given rename script exists with non-zero return code.
     """
     # test if reference file for rename script actually exists.
-    file_ref_rename = resource_filename(
-        Requirement.parse('qp_deblur'),
-        'qp_deblur/assets/tmpl_gg13.8-99_rename-json.py')
+    file_ref_rename = qp_deblur.get_data(
+        join('sepp', 'tmpl_gg13.8-99_rename-json.py'))
     if reference_rename is not None:
         file_ref_rename = reference_rename
     if not exists(file_ref_rename):
@@ -282,9 +281,8 @@ def generate_insertion_trees(placements, out_dir,
                          file_ref_rename)
 
     # create a valid placement.json file as input for guppy
-    file_ref_template = resource_filename(
-        Requirement.parse('qp_deblur'),
-        'qp_deblur/assets/tmpl_gg13.8-99_placement.json')
+    file_ref_template = qp_deblur.get_data(
+        join('sepp', 'tmpl_gg13.8-99_placement.json'))
     if reference_template is not None:
         file_ref_template = reference_template
     if not exists(file_ref_template):
@@ -445,18 +443,14 @@ def deblur(qclient, job_id, parameters, out_dir):
         fp_reference_rename = None
         if 'Reference phylogeny for SEPP' in parameters:
             if parameters['Reference phylogeny for SEPP'] == 'tiny':
-                fp_reference_alignment = resource_filename(
-                    Requirement.parse('qp-deblur'),
-                    'qp_deblur/assets/reference_alignment_tiny.fasta')
-                fp_reference_phylogeny = resource_filename(
-                    Requirement.parse('qp-deblur'),
-                    'qp_deblur/assets/reference_phylogeny_tiny.nwk')
-                fp_reference_template = resource_filename(
-                    Requirement.parse('qp-deblur'),
-                    'qp_deblur/assets/tmpl_tiny_placement.json')
-                fp_reference_rename = resource_filename(
-                    Requirement.parse('qp-deblur'),
-                    'qp_deblur/assets/tmpl_tiny_rename-json.py')
+                fp_reference_alignment = qp_deblur.get_data(join(
+                    'sepp', 'reference_alignment_tiny.fasta'))
+                fp_reference_phylogeny = qp_deblur.get_data(join(
+                    'sepp', 'reference_phylogeny_tiny.nwk'))
+                fp_reference_template = qp_deblur.get_data(join(
+                    'sepp', 'tmpl_tiny_placement.json'))
+                fp_reference_rename = qp_deblur.get_data(join(
+                    'sepp', 'tmpl_tiny_rename-json.py'))
         try:
             new_placements = generate_sepp_placements(
                 novel_fragments, out_dir, parameters['Threads per sample'],

@@ -6,6 +6,8 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 
+import os
+
 from qiita_client import QiitaPlugin, QiitaCommand
 
 from .deblur import deblur
@@ -73,3 +75,9 @@ deblur_cmd = QiitaCommand(
     "Deblur", "deblurring workflow", deblur, req_params, opt_params,
     outputs, dflt_param_set)
 plugin.register_command(deblur_cmd)
+
+_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+
+def get_data(path):
+    return os.path.join(_ROOT, '..', 'support_files', path)

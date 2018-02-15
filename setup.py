@@ -9,7 +9,6 @@
 # -----------------------------------------------------------------------------
 
 from setuptools import setup
-from setuptools.command.install import install
 
 __version__ = "1.0.4"
 
@@ -26,34 +25,10 @@ classes = """
     Operating System :: MacOS :: MacOS X
 """
 
-
-class PostInstallCommand(install):
-    """Post-installation for installation mode."""
-    def run(self):
-        import shutil
-        import os
-
-        install.run(self)
-
-        assets_dir = os.path.join(self.install_libbase, 'qp_deblur/assets/')
-        if not os.path.exists(assets_dir):
-            os.mkdir(assets_dir)
-
-        for filename in ['tmpl_gg13.8-99_placement.json',
-                         'tmpl_gg13.8-99_rename-json.py',
-                         'reference_alignment_tiny.fasta',
-                         'reference_phylogeny_tiny.nwk',
-                         'tmpl_tiny_placement.json',
-                         'tmpl_tiny_rename-json.py']:
-            shutil.copy(os.path.join('support_files', 'sepp', filename),
-                        assets_dir)
-
-
 with open('README.rst') as f:
     long_description = f.read()
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
-
 setup(name='qp-deblur',
       version=__version__,
       long_description=long_description,
@@ -64,6 +39,13 @@ setup(name='qp-deblur',
       url='https://github.com/qiita-spots/qp-deblur',
       test_suite='nose.collector',
       packages=['qp_deblur'],
+      package_data={'qp_deblur': [
+          '../support_files/sepp/tmpl_gg13.8-99_placement.json',
+          '../support_files/sepp/tmpl_gg13.8-99_rename-json.py',
+          '../support_files/sepp/reference_alignment_tiny.fasta',
+          '../support_files/sepp/reference_phylogeny_tiny.nwk',
+          '../support_files/sepp/tmpl_tiny_placement.json',
+          '../support_files/sepp/tmpl_tiny_rename-json.py']},
       scripts=['scripts/configure_deblur', 'scripts/start_deblur'],
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
       install_requires=['click >= 3.3', 'future', 'deblur'],
@@ -71,4 +53,4 @@ setup(name='qp-deblur',
           ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
            'egg=qiita-files-0.1.0-dev')],
       classifiers=classifiers,
-      cmdclass={'install': PostInstallCommand})
+      )
