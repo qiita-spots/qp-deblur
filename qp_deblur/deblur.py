@@ -80,7 +80,7 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
 
 
 def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
-                             reference_alignment=None):
+                             reference_alignment=None, reference_info=None):
     """Generates the sepp commands
 
     Parameters
@@ -97,6 +97,10 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     reference_alignment : str, optional
         A filepath to an alternative reference alignment for SEPP.
         If None, default alignment is uses, which is Greengenes 13.8 99% id.
+    reference_info : str, optional
+        A filepath to an alternative reference RAxML info file for SEPP.
+        If None, default info file is used, which describes Greengenes 13.8
+        99% id.
 
     Returns
     -------
@@ -127,14 +131,17 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     param_alignment = ''
     if reference_alignment is not None:
         param_alignment = ' -a %s ' % reference_alignment
+    param_info = ''
+    if reference_info is not None:
+        param_info = ' -r %s ' % reference_info
     # SEPP writes output into the current working directory (cwd), therefore
     # we here first need to store the cwd, then move into the output directory,
     # perform SEPP and move back to the stored cwd for a clean state
     curr_pwd = environ['PWD']
     std_out, std_err, return_value = system_call(
-        'cd %s && run-sepp.sh %s %s -x %s %s %s; cd %s' %
+        'cd %s && run-sepp.sh %s %s -x %s %s %s %s; cd %s' %
         (out_dir, file_input, run_name, threads,
-         param_phylogeny, param_alignment, curr_pwd))
+         param_phylogeny, param_alignment, param_info, curr_pwd))
 
     # parse placements from SEPP results
     file_placements = '%s/%s_placement.json' % (out_dir, run_name)
@@ -164,6 +171,7 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
 
 def _generate_template_rename(file_reference_phylogeny,
                               file_reference_alignment,
+                              file_reference_info,
                               out_dir):
     """Produces placement template and rename script for reference phylogeny.
 
@@ -173,6 +181,8 @@ def _generate_template_rename(file_reference_phylogeny,
         A filepath to an alternative reference phylogeny for SEPP.
     file_reference_alignment : str
         A filepath to an alternative reference alignment for SEPP.
+    file_reference_info : str
+        A filepath to a RAxML info file for an alternative reference for SEPP.
     out_dir : str
         The job output directory
 
@@ -185,15 +195,17 @@ def _generate_template_rename(file_reference_phylogeny,
     ------
     ValueError
         If a) the given out_dir directory does not exist.
-        b) the given reference phylogeny or alignment does not exist.
+        b) the given reference phylogeny, alignment or info file does not
+           exist.
         c) the run-sepp.sh wrapper script fails for any reason.
 
     Notes
     -----
     This function only needs to be called once per reference phylogeny/
-    alignment, i.e. if we update Greengenes or extend SEPP for Silva or other
-    reference phylogenies. I am including this function for easier maintainance
-    in the future.
+    alignment/info, i.e. if we update Greengenes or extend SEPP for Silva or
+    other reference phylogenies. I am including this function for easier
+    maintainance in the future. Good to know: a reference always comes as three
+    files: the alignment, the tree and the RAxML info file.
     """
     if not exists(out_dir):
         raise ValueError("Output directory '%s' does not exist!" % out_dir)
@@ -203,6 +215,9 @@ def _generate_template_rename(file_reference_phylogeny,
     if not exists(file_reference_alignment):
         raise ValueError("Reference alignment file '%s' does not exits!" %
                          file_reference_alignment)
+    if not exists(file_reference_info):
+        raise ValueError("Reference RAxML info file '%s' does not exits!" %
+                         file_reference_info)
 
     # create a dummy sequence input file
     file_input = '%s/input.fasta' % out_dir
@@ -212,9 +227,9 @@ def _generate_template_rename(file_reference_phylogeny,
                 'CAAGTCTGATGTGAAAGGCTGGGGCCCAACCCCGGGACTGCATTGGAAACTGCCCGTCTT'
                 'GAGTG\n')
     std_out, std_err, return_value = system_call(
-        'cd %s; run-sepp.sh %s dummy -x 1 -a %s -t %s' %
+        'cd %s; run-sepp.sh %s dummy -x 1 -a %s -t %s -r %s' %
         (out_dir, file_input, file_reference_alignment,
-         file_reference_phylogeny))
+         file_reference_phylogeny, file_reference_info))
     if return_value != 0:
         error_msg = ("Error running SEPP:\nStd out: %s\nStd err: %s"
                      % (std_out, std_err))
@@ -441,6 +456,7 @@ def deblur(qclient, job_id, parameters, out_dir):
         fp_reference_phylogeny = None
         fp_reference_template = None
         fp_reference_rename = None
+        fp_reference_info = None
         if 'Reference phylogeny for SEPP' in parameters:
             if parameters['Reference phylogeny for SEPP'] == 'tiny':
                 fp_reference_alignment = qp_deblur.get_data(join(
@@ -451,11 +467,23 @@ def deblur(qclient, job_id, parameters, out_dir):
                     'sepp', 'tmpl_tiny_placement.json'))
                 fp_reference_rename = qp_deblur.get_data(join(
                     'sepp', 'tmpl_tiny_rename-json.py'))
+            elif parameters['Reference phylogeny for SEPP'] == 'Silva_12.8':
+                fp_dir = join(environ['CONDA_PREFIX'],
+                              'share', 'fragment-insertion', 'ref')
+                fp_reference_alignment = join(
+                    fp_dir, 'silva12.8_99otus_aligned_masked1977.fasta')
+                fp_reference_phylogeny = join(
+                    fp_dir, 'silva12.8_99otus_aligned_masked1977.tre')
+                fp_reference_template = qp_deblur.get_data(join(
+                    'sepp', 'tmpl_silva12.8-99_placement.json'))
+                fp_reference_rename = qp_deblur.get_data(join(
+                    'sepp', 'tmpl_silva12.8-99_rename-json.py'))
         try:
             new_placements = generate_sepp_placements(
                 novel_fragments, out_dir, parameters['Threads per sample'],
                 reference_alignment=fp_reference_alignment,
-                reference_phylogeny=fp_reference_phylogeny)
+                reference_phylogeny=fp_reference_phylogeny,
+                reference_info=fp_reference_info)
         except ValueError as e:
             return False, None, str(e)
 
