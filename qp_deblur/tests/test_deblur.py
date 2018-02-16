@@ -358,6 +358,93 @@ class deblurTests(PluginTestCase):
         self.assertEqual("", msg)
         self.assertTrue(success)
 
+    def test_deblur_silva(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/filtered_5_seqs.demux', fp)
+
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB7.640196': {'description_prep': 'SKB7'},
+            'SKB8.640193': {'description_prep': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': '16S'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_demux')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['Demultiplexed sequences'] = aid
+        self.params['Reference phylogeny for SEPP'] = "Silva_12.8"
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        # create a fake run-sepp.sh binary.
+        # Basically, I want to test here if the right filepaths are passed to
+        # run-sepp.sh when requesting silva instead of the default reference.
+        # Unfortunately, a real computation would take too long for Travis.
+        # Thus, I replace the actual binary script here with something that
+        # takes the parameters and echos them to stderr and fails. This way,
+        # we can expect to find file paths in the msg error message.
+        fp_fake_sepp = join(out_dir, 'run-sepp.sh')
+        with open(fp_fake_sepp, 'w') as f:
+            f.write('#!/bin/bash\n\n'
+                    'while [[ $# -gt 0 ]]\n'
+                    'do\n'
+                    '	key="$1"\n'
+                    '	case $key in\n'
+                    '		-a)\n'
+                    '			a="$2"\n'
+                    '			shift # past argument\n'
+                    '			;;\n'
+                    '		-t)\n'
+                    '			t="$2"\n'
+                    '			shift # past argument\n'
+                    '			;;\n'
+                    '		-r)\n'
+                    '			r="$2"\n'
+                    '			shift # past argument\n'
+                    '			;;\n'
+                    '		*)\n'
+                    '			opts="$opts"" ""$key"" ""$2"\n'
+                    '			shift # past argument\n'
+                    '			;;\n'
+                    '	esac\n'
+                    '	shift # past argument or value\n'
+                    'done\n'
+                    '>&2 echo "info file \'$r\'"\n'
+                    '>&2 echo "tree file \'$t\'"\n'
+                    '>&2 echo "alignment file \'$a\'"\n'
+                    'exit 1\n')
+        chmod(fp_fake_sepp, 0o775)
+        environ['PATH'] = '%s:%s' % (out_dir, self.oldpath)
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+        self.assertFalse(success)
+        self.assertEqual(ainfo, None)
+        self.assertIn(('share/fragment-insertion/ref/'
+                       'silva12.8_99otus_aligned_masked1977.tre'), msg)
+        self.assertIn(('share/fragment-insertion/ref/'
+                       'silva12.8_99otus_aligned_masked1977.fasta'), msg)
+        self.assertIn(('share/fragment-insertion/ref/'
+                       'silva12.8_99otus_aligned_masked1977.info'), msg)
+
 
 class deblurTests_binaryfail(PluginTestCase):
     def setUp(self):

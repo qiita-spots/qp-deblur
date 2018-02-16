@@ -474,6 +474,8 @@ def deblur(qclient, job_id, parameters, out_dir):
                     fp_dir, 'silva12.8_99otus_aligned_masked1977.fasta')
                 fp_reference_phylogeny = join(
                     fp_dir, 'silva12.8_99otus_aligned_masked1977.tre')
+                fp_reference_info = join(
+                    fp_dir, 'silva12.8_99otus_aligned_masked1977.info')
                 fp_reference_template = qp_deblur.get_data(join(
                     'sepp', 'tmpl_silva12.8-99_placement.json'))
                 fp_reference_rename = qp_deblur.get_data(join(
