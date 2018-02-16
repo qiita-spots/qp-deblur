@@ -358,6 +358,42 @@ class deblurTests(PluginTestCase):
         self.assertEqual("", msg)
         self.assertTrue(success)
 
+
+class deblurSilva(PluginTestCase):
+    def setUp(self):
+        # this will allow us to see the full errors
+        self.maxDiff = None
+
+        plugin("https://localhost:21174", 'register', 'ignored')
+        self.params = {
+            'Positive filtering database': 'default',
+            'Negative filtering database': 'default',
+            'Mean per nucleotide error rate': 0.005,
+            'Error probabilities for each Hamming distance': (
+                '1, 0.06, 0.02, 0.02, 0.01, 0.005, 0.005, '
+                '0.005, 0.001, 0.001, 0.001, 0.0005'),
+            'Insertion/deletion (indel) probability': 0.01,
+            'Maximum number of insertion/deletion (indel)': 3,
+            'Sequence trim length (-1 for no trimming)': 100,
+            'Minimum dataset-wide read threshold': 0,
+            'Minimum per-sample read threshold': 2,
+            'Threads per sample': 1, 'Jobs to start': 1,
+            'Reference phylogeny for SEPP': 'Silva_12.8'}
+        self._clean_up_files = []
+
+        # saving current value of PATH
+        self.oldpath = environ['PATH']
+
+    def tearDown(self):
+        # restore eventually changed PATH env var
+        environ['PATH'] = self.oldpath
+        for fp in self._clean_up_files:
+            if exists(fp):
+                if isdir(fp):
+                    rmtree(fp)
+                else:
+                    remove(fp)
+
     def test_deblur_silva(self):
         # generating filepaths
         fd, fp = mkstemp(suffix='_seqs.demux')
@@ -385,7 +421,6 @@ class deblurTests(PluginTestCase):
         aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
 
         self.params['Demultiplexed sequences'] = aid
-        self.params['Reference phylogeny for SEPP'] = "Silva_12.8"
 
         data = {'user': 'demo@microbio.me',
                 'command': dumps(['deblur', '1.0.4', 'Deblur']),
