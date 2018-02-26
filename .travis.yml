@@ -25,7 +25,7 @@ install:
   # - export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/server.crt
   # - qiita-env make --no-load-ontologies
   # - source deactivate
-  - curl https://raw.githubusercontent.com/danteese/qiita/fix-2427/scripts/qiita_script -o qiita-install
+  - curl https://raw.githubusercontent.com/danteese/qiita/fix-2427/scripts/qiita-install -o qiita-install
   - chmod +x qiita-install
   - ./qiita-install -e dev
   # installing this plugin
