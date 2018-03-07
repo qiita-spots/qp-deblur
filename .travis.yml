@@ -28,6 +28,9 @@ install:
   - curl https://raw.githubusercontent.com/danteese/qiita/fix-2427/scripts/qiita-install -o qiita-install
   - chmod +x qiita-install
   - ./qiita-install -e dev
+  # Test the plugin
+  - ps -elf | grep redis
+  - qiita-test-install
   # installing this plugin
   - conda create --yes -n deblur-1.0.4 python=$PYTHON_VERSION numpy flake8
   - source activate deblur-1.0.4
