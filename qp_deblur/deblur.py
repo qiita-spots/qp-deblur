@@ -321,6 +321,16 @@ def generate_insertion_trees(placements, out_dir,
                      % (file_ref_rename, std_out, std_err))
         raise ValueError(error_msg)
 
+    # this is required cause there is a missing branch in the SEPP tree
+    new_tree = None
+    with open(file_tree, 'r') as tree_fp:
+        tree = tree_fp.read()
+        if tree.endswith(tuple(["'k__Bacteria');", "'k__Bacteria');\n"])):
+            new_tree = "%s'k__Bacteria':0.0);" % tree[:-15]
+    if new_tree is not None:
+        with open(file_tree, 'w') as tree_fp:
+            tree_fp.write(new_tree)
+
     return file_tree
 
 
@@ -418,7 +428,7 @@ def deblur(qclient, job_id, parameters, out_dir):
             f.write("")
 
     # Step 4, communicate with archive to check and generate placements
-    qclient.update_job_step(job_id, "Step 4 of 4 (1/4): Retriving "
+    qclient.update_job_step(job_id, "Step 4 of 4 (1/4): Retrieving "
                             "observations information")
     features = list(load_table(final_biom_hit).ids(axis='observation'))
 
@@ -502,11 +512,11 @@ def deblur(qclient, job_id, parameters, out_dir):
 
     ainfo = [ArtifactInfo('deblur final table', 'BIOM',
                           [(final_biom, 'biom'),
-                           (final_seqs, 'preprocessed_fasta')]),
-             ArtifactInfo('deblur reference hit table', 'BIOM',
-                          [(final_biom_hit, 'biom'),
-                           (final_seqs_hit, 'preprocessed_fasta'),
-                           (fp_phylogeny, 'plain_text')],
-                          new_placements)]
+                           (final_seqs, 'preprocessed_fasta')])]
+    if fp_phylogeny is not None:
+        ainfo.append(ArtifactInfo('deblur reference hit table', 'BIOM',
+                     [(final_biom_hit, 'biom'),
+                      (final_seqs_hit, 'preprocessed_fasta'),
+                      (fp_phylogeny, 'plain_text')], new_placements))
 
     return True, ainfo, ""
