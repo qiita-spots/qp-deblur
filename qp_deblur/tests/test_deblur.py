@@ -258,7 +258,7 @@ class deblurTests(PluginTestCase):
         # finally we are gonna test that the patch is added to the tree
         with open(file_tree, 'r') as tree_fp:
             tree = tree_fp.read()
-            self.assertTrue(tree.endswith("'k__Bacteria':0.0);"))
+            self.assertTrue(tree.endswith("'k__Bacteria':0.0):0.0;\n"))
 
     def test_deblur_failingbin(self):
         # generating filepaths
