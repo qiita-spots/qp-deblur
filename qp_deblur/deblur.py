@@ -13,6 +13,7 @@ from future.utils import viewitems
 from functools import partial
 from collections import OrderedDict
 import json
+from skbio import TreeNode
 
 from biom import Table, load_table
 from biom.util import biom_open
@@ -321,15 +322,12 @@ def generate_insertion_trees(placements, out_dir,
                      % (file_ref_rename, std_out, std_err))
         raise ValueError(error_msg)
 
-    # this is required cause there is a missing branch in the SEPP tree
-    new_tree = None
-    with open(file_tree, 'r') as tree_fp:
-        tree = tree_fp.read()
-        if tree.endswith(tuple(["'k__Bacteria');", "'k__Bacteria');\n"])):
-            new_tree = "%s'k__Bacteria':0.0);" % tree[:-15]
-    if new_tree is not None:
-        with open(file_tree, 'w') as tree_fp:
-            tree_fp.write(new_tree)
+    # making sure that all branches in the generated tree have branch lenghts
+    tree = TreeNode.read(file_tree)
+    for node in tree.preorder():
+        if node.length is None:
+            node.length = 0.0
+    tree.write(file_tree)
 
     return file_tree
 

@@ -185,17 +185,11 @@ class deblurTests(PluginTestCase):
         self.assertTrue(success)
 
         self.assertEqual("BIOM", ainfo[0].artifact_type)
-        self.assertEqual("BIOM", ainfo[1].artifact_type)
 
         self.assertEqual(
             [(join(out_dir, 'deblur_out', 'all.biom'), 'biom'),
              (join(out_dir, 'deblur_out', 'all.seqs.fa'),
               'preprocessed_fasta')], ainfo[0].files)
-        self.assertEqual(
-            [(join(out_dir, 'deblur_out', 'reference-hit.biom'), 'biom'),
-             (join(out_dir, 'deblur_out', 'reference-hit.seqs.fa'),
-              'preprocessed_fasta'),
-             (None, 'plain_text')], ainfo[1].files)
 
     def test_deblur_demux(self):
         # generating filepaths
