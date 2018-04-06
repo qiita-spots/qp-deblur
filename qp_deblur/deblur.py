@@ -324,7 +324,7 @@ def generate_insertion_trees(placements, out_dir,
 
     # making sure that all branches in the generated tree have branch lenghts
     tree = TreeNode.read(file_tree)
-    for node in tree.preorder():
+    for node in tree.preorder(include_self=False):
         if node.length is None:
             node.length = 0.0
     tree.write(file_tree)
