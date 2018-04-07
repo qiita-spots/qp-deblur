@@ -86,6 +86,58 @@ class deblurTests(PluginTestCase):
 
         self.assertEqual(obs, exp)
 
+    def test_deblur_no_tree(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/no_sepp_seqs.demux', fp)
+        prep_info_dict = {
+            'SKB7.640196': {'description_prep': 'SKB7'},
+            'SKB8.640193': {'description_prep': 'SKB8'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': 'ITS'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_fastq')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['Demultiplexed sequences'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '1.0.4', 'Deblur']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        # pre-populate archive with fragment placements
+        self.qclient.patch(url="/qiita_db/archive/observations/",
+                           op="add", path=jid,
+                           value=dumps(self.features))
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+
+        self.assertEqual("", msg)
+        self.assertTrue(success)
+
+        self.assertEqual("BIOM", ainfo[0].artifact_type)
+        self.assertEqual(1, len(ainfo))
+
+        self.assertEqual(
+            [(join(out_dir, 'deblur_out', 'all.biom'), 'biom'),
+             (join(out_dir, 'deblur_out', 'all.seqs.fa'),
+              'preprocessed_fasta')], ainfo[0].files)
+
     def test_deblur(self):
         # generating filepaths
         fd, fp = mkstemp(suffix='_seqs.demux')
@@ -133,17 +185,11 @@ class deblurTests(PluginTestCase):
         self.assertTrue(success)
 
         self.assertEqual("BIOM", ainfo[0].artifact_type)
-        self.assertEqual("BIOM", ainfo[1].artifact_type)
 
         self.assertEqual(
             [(join(out_dir, 'deblur_out', 'all.biom'), 'biom'),
              (join(out_dir, 'deblur_out', 'all.seqs.fa'),
               'preprocessed_fasta')], ainfo[0].files)
-        self.assertEqual(
-            [(join(out_dir, 'deblur_out', 'reference-hit.biom'), 'biom'),
-             (join(out_dir, 'deblur_out', 'reference-hit.seqs.fa'),
-              'preprocessed_fasta'),
-             (None, 'plain_text')], ainfo[1].files)
 
     def test_deblur_demux(self):
         # generating filepaths
@@ -199,15 +245,20 @@ class deblurTests(PluginTestCase):
              (join(out_dir, 'deblur_out', 'deblured', 'all.seqs.fa'),
               'preprocessed_fasta')], ainfo[0].files)
 
+        file_tree = join(out_dir, 'deblur_out',
+                         'deblured', 'insertion_tree.relabelled.tre')
         self.assertEqual(
             [(join(out_dir, 'deblur_out', 'deblured', 'reference-hit.biom'),
               'biom'),
              (join(out_dir, 'deblur_out', 'deblured',
                    'reference-hit.seqs.fa'), 'preprocessed_fasta'),
-             (join(out_dir, 'deblur_out', 'deblured',
-                   'insertion_tree.relabelled.tre'),
-              'plain_text')
+             (file_tree, 'plain_text')
              ], ainfo[1].files)
+
+        # finally we are gonna test that the patch is added to the tree
+        with open(file_tree, 'r') as tree_fp:
+            tree = tree_fp.read()
+            self.assertTrue(tree.endswith("'k__Bacteria':0.0);\n"))
 
     def test_deblur_failingbin(self):
         # generating filepaths

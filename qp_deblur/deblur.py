@@ -13,6 +13,7 @@ from future.utils import viewitems
 from functools import partial
 from collections import OrderedDict
 import json
+from skbio import TreeNode
 
 from biom import Table, load_table
 from biom.util import biom_open
@@ -321,6 +322,13 @@ def generate_insertion_trees(placements, out_dir,
                      % (file_ref_rename, std_out, std_err))
         raise ValueError(error_msg)
 
+    # making sure that all branches in the generated tree have branch lenghts
+    tree = TreeNode.read(file_tree)
+    for node in tree.preorder(include_self=False):
+        if node.length is None:
+            node.length = 0.0
+    tree.write(file_tree)
+
     return file_tree
 
 
@@ -418,7 +426,7 @@ def deblur(qclient, job_id, parameters, out_dir):
             f.write("")
 
     # Step 4, communicate with archive to check and generate placements
-    qclient.update_job_step(job_id, "Step 4 of 4 (1/4): Retriving "
+    qclient.update_job_step(job_id, "Step 4 of 4 (1/4): Retrieving "
                             "observations information")
     features = list(load_table(final_biom_hit).ids(axis='observation'))
 
@@ -502,11 +510,11 @@ def deblur(qclient, job_id, parameters, out_dir):
 
     ainfo = [ArtifactInfo('deblur final table', 'BIOM',
                           [(final_biom, 'biom'),
-                           (final_seqs, 'preprocessed_fasta')]),
-             ArtifactInfo('deblur reference hit table', 'BIOM',
-                          [(final_biom_hit, 'biom'),
-                           (final_seqs_hit, 'preprocessed_fasta'),
-                           (fp_phylogeny, 'plain_text')],
-                          new_placements)]
+                           (final_seqs, 'preprocessed_fasta')])]
+    if fp_phylogeny is not None:
+        ainfo.append(ArtifactInfo('deblur reference hit table', 'BIOM',
+                     [(final_biom_hit, 'biom'),
+                      (final_seqs_hit, 'preprocessed_fasta'),
+                      (fp_phylogeny, 'plain_text')], new_placements))
 
     return True, ainfo, ""
