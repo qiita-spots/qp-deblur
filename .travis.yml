@@ -12,19 +12,26 @@ before_install:
   - conda update --yes conda
 install:
   # installing Qiita in it's own environment python2.7
-  - travis_retry conda create --yes -n qiita python=2.7 pip nose flake8
-    pyzmq networkx pyparsing natsort mock future libgfortran
-    'pandas>=0.18' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
+  # - travis_retry conda create --yes -n qiita python=2.7 pip nose flake8
+  #   pyzmq networkx pyparsing natsort mock future libgfortran
+  #   'pandas>=0.18' 'scipy>0.13.0' 'numpy>=1.7' 'h5py>=2.3.1'
+  # - source activate qiita
+  # - pip install sphinx sphinx-bootstrap-theme coveralls
+  # # - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
+  # - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
+  # # as we don't need redbiom we are going to use the default redis port
+  # - sed 's/PORT = 7777/PORT = 6379/g' $HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg > config_test.cfg
+  # - export QIITA_CONFIG_FP=${PWD}/config_test.cfg
+  # - export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/server.crt
+  # - qiita-env make --no-load-ontologies
+  # - source deactivate
+  - curl https://raw.githubusercontent.com/danteese/qiita/fix-2427/scripts/qiita-install -o qiita-install
+  - chmod +x qiita-install
+  - ./qiita-install -e dev
+  # Test the plugin
+  - ps -elf | grep redis
   - source activate qiita
-  - pip install sphinx sphinx-bootstrap-theme coveralls
-  # - pip install https://github.com/biocore/qiita/archive/master.zip --process-dependency-links
-  - pip install https://github.com/biocore/qiita/archive/dev.zip --process-dependency-links
-  # as we don't need redbiom we are going to use the default redis port
-  - sed 's/PORT = 7777/PORT = 6379/g' $HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/config_test.cfg > config_test.cfg
-  - export QIITA_CONFIG_FP=${PWD}/config_test.cfg
-  - export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita/lib/python2.7/site-packages/qiita_core/support_files/server.crt
-  - qiita-env make --no-load-ontologies
-  - source deactivate
+  - qiita-test-install
   # installing this plugin
   - conda create --yes -n deblur-1.0.4 python=$PYTHON_VERSION numpy flake8
   - source activate deblur-1.0.4
