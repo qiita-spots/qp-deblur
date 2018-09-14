@@ -10,7 +10,7 @@
 
 from setuptools import setup
 
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 
 classes = """
     Development Status :: 3 - Alpha
@@ -48,7 +48,7 @@ setup(name='qp-deblur',
           '../support_files/sepp/tmpl_tiny_rename-json.py']},
       scripts=['scripts/configure_deblur', 'scripts/start_deblur'],
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
-      install_requires=['click >= 3.3', 'future', 'deblur'],
+      install_requires=['click >= 3.3', 'future', 'deblur>=1.1.0'],
       dependency_links=[
           ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
            'egg=qiita-files-0.1.0-dev')],
