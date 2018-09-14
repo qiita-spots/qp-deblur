@@ -45,8 +45,9 @@ opt_params = {
     'Minimum per-sample read threshold': ['integer', '2'],
     'Threads per sample': ['integer', '1'],
     'Jobs to start': ['integer', '1'],
-    'Reference phylogeny for SEPP': ['choice:["Greengenes_13.8"]',
-                                     'Greengenes_13.8']
+    'Reference phylogeny for SEPP':
+        ['choice:["Greengenes_13.8", "Silva_12.8"]',
+         'Greengenes_13.8']
 }
 outputs = {'deblur final table': 'BIOM',
            'deblur reference hit table': 'BIOM'}

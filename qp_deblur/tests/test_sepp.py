@@ -146,6 +146,8 @@ class seppTests(TestCase):
                                             'tmpl_tiny_placement.json'))
         self.fp_ref_rename = abspath(join('support_files', 'sepp',
                                           'tmpl_tiny_rename-json.py'))
+        self.fp_ref_info = abspath(join('support_files', 'sepp',
+                                        'reference_gg13.8-99.info'))
 
     def test_generate_sepp_placements(self):
         out_dir = mkdtemp()
@@ -248,6 +250,7 @@ class seppTests(TestCase):
         out_dir = mkdtemp()
         obs = _generate_template_rename(self.fp_ref_phylogeny,
                                         self.fp_ref_alignment,
+                                        self.fp_ref_info,
                                         out_dir)
         self.assertIn('tmpl_dummy_placement.json', obs[0])
         self.assertIn('dummy_rename-json.py', obs[1])
@@ -265,6 +268,7 @@ class seppTests(TestCase):
             _generate_template_rename,
             self.fp_ref_phylogeny,
             self.fp_ref_alignment,
+            self.fp_ref_info,
             file_missing)
 
         # non existing phylogeny
@@ -274,6 +278,7 @@ class seppTests(TestCase):
             _generate_template_rename,
             file_missing,
             self.fp_ref_alignment,
+            self.fp_ref_info,
             out_dir)
 
         # non existing alignment
@@ -282,6 +287,17 @@ class seppTests(TestCase):
             "Reference alignment file '%s' does not exits!" % file_missing,
             _generate_template_rename,
             self.fp_ref_phylogeny,
+            file_missing,
+            self.fp_ref_info,
+            out_dir)
+
+        # non existing info
+        self.assertRaisesRegex(
+            ValueError,
+            "Reference RAxML info file '%s' does not exits!" % file_missing,
+            _generate_template_rename,
+            self.fp_ref_phylogeny,
+            self.fp_ref_alignment,
             file_missing,
             out_dir)
 
@@ -292,6 +308,7 @@ class seppTests(TestCase):
             _generate_template_rename,
             self.fp_ref_alignment,
             self.fp_ref_phylogeny,
+            self.fp_ref_info,
             out_dir)
 
         rmtree(out_dir)

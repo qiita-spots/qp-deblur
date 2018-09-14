@@ -42,6 +42,8 @@ setup(name='qp-deblur',
       package_data={'qp_deblur': [
           '../support_files/sepp/tmpl_gg13.8-99_placement.json',
           '../support_files/sepp/tmpl_gg13.8-99_rename-json.py',
+          '../support_files/sepp/tmpl_silva12.8-99_placement.json',
+          '../support_files/sepp/tmpl_silva12.8-99_rename-json.py',
           '../support_files/sepp/reference_alignment_tiny.fasta',
           '../support_files/sepp/reference_phylogeny_tiny.nwk',
           '../support_files/sepp/tmpl_tiny_placement.json',
