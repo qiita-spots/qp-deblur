@@ -17,7 +17,7 @@ __all__ = ['deblur']
 
 # Initialize the plugin
 plugin = QiitaPlugin(
-    'deblur', '1.0.4', 'A greedy deconvolution algorithm based on Illumina '
+    'deblur', '1.1.0', 'A greedy deconvolution algorithm based on Illumina '
     'Miseq/Hiseq error profiles')
 
 # Define the deblur-workflow command
