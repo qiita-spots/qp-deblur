@@ -526,6 +526,7 @@ def generate_tree_from_fragments(fp_fragments, out_dir):
             ----------
             fp_fragments : str
                 The path to a file containing a JSON dump of fragments
+                (assume path is in out_dir)
             out_dir : str
                 The path to the job's output directory
 
@@ -547,4 +548,8 @@ def generate_tree_from_fragments(fp_fragments, out_dir):
 
         return True, fp_phylogeny
 
+'''
+We need one more command to prune from BIOM all the sequences not in this new tree! THat means one more command entrypoint
+and how the hell do we do this?
+'''
 
