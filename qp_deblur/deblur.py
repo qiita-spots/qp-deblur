@@ -547,9 +547,3 @@ def generate_tree_from_fragments(fp_fragments, out_dir):
             return False, str(e)
 
         return True, fp_phylogeny
-
-'''
-We need one more command to prune from BIOM all the sequences not in this new tree! THat means one more command entrypoint
-and how the hell do we do this?
-'''
-
