@@ -518,3 +518,33 @@ def deblur(qclient, job_id, parameters, out_dir):
                       (fp_phylogeny, 'plain_text')], new_placements))
 
     return True, ainfo, ""
+
+def generate_tree_from_fragments(fp_fragments, out_dir):
+    """Run generate_insertion_trees with the given parameters
+
+            Parameters
+            ----------
+            fp_fragments : str
+                The path to a file containing a JSON dump of fragments
+            out_dir : str
+                The path to the job's output directory
+
+            Returns
+            -------
+            False, Error_Message if unsuccessful
+            True, file_path_to_result if successful
+    """
+    with open(fp_fragments) as fragments_file:
+        placements = json.load(fragments_file)
+
+        try:
+            fp_phylogeny = generate_insertion_trees(placements,
+                                                    out_dir,
+                                                    reference_template=None,
+                                                    reference_rename=None)
+        except ValueError as e:
+            return False, str(e)
+
+        return True, fp_phylogeny
+
+
