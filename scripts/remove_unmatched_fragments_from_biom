@@ -10,19 +10,19 @@
 
 import click
 
-from qp_deblur.deblur import generate_tree_from_fragments
+from qp_deblur.deblur import remove_unmatched_fragments_from_biom
 
 @click.command()
-@click.option('--fp_fragments', required=True, type=str)
-@click.option('--output_dir', required=True, type=str)
+@click.option('--fp_phylogeny', required=True, type=str)
+@click.option('--fp_biom', required=True, type=str)
 
 #execute needed to support click
-def execute(fp_fragments, output_dir):
-    """Generates a tree from fragments and puts the output in output_dir"""
-    status, message = generate_tree_from_fragments(fp_fragments, output_dir)
+def execute(fp_phylogeny, fp_biom):
+    """Filters observations from fp_biom that are not found in fp_phylogeny"""
+    status, message = remove_unmatched_fragments_from_biom(fp_fragments, output_dir)
 
     if status:
-        print(message)  # message will be fp of output tree
+        print(message)  # message will be fp of output biom
         #if successful, script will automatically return status code 0.
     else:
         # message will be exception string
