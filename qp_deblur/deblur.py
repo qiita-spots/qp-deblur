@@ -556,7 +556,7 @@ def remove_unmatched_fragments_from_biom(fp_phylogeny, fp_biom):
             Parameters
             ----------
             fp_phylogeny: str
-                The path to a file containing a phylogenic tree
+                The path to a file containing a phylogenetic tree
             fp_biom : str
                 The path to a file containing a BIOM file w/unmatched
                 observations
