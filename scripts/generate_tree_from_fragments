@@ -12,24 +12,31 @@ import click
 
 from qp_deblur.deblur import generate_tree_from_fragments
 
+
 @click.command()
 @click.option('--fp_archive', required=True, type=str)
 @click.option('--output_dir', required=True, type=str)
-
-#execute needed to support click
-def execute(fp_archive, output_dir):
+@click.option('--fp_ref_template', required=False, type=str)
+@click.option('--fp_ref_rename', required=False, type=str)
+# execute needed to support click
+def execute(fp_archive, output_dir, fp_ref_template, fp_ref_rename):
     """Generates a tree from fragments and puts the output in output_dir"""
-    status, message = generate_tree_from_fragments(fp_archive, output_dir)
+
+    status, message = generate_tree_from_fragments(
+                                    fp_archive,
+                                    output_dir,
+                                    fp_reference_template=fp_ref_template,
+                                    fp_reference_rename=fp_ref_rename)
 
     if status:
         print(message)  # message will be fp of output tree
-        #if successful, script will automatically return status code 0.
+        # if successful, script will automatically return status code 0.
     else:
         # message will be exception string
         print("An error occured: %s" % message)
-        #ensure that script returns status code 1, if an error occured.
+        # ensure that script returns status code 1, if an error occured.
         exit(1)
+
 
 if __name__ == '__main__':
     execute()
-

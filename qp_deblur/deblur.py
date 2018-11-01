@@ -520,30 +520,45 @@ def deblur(qclient, job_id, parameters, out_dir):
     return True, ainfo, ""
 
 
-def generate_tree_from_fragments(fp_fragments, out_dir):
-    """Run generate_insertion_trees with the given parameters
+def generate_tree_from_fragments(fp_placements,
+                                 out_dir,
+                                 fp_reference_template=None,
+                                 fp_reference_rename=None):
+    """Generates phylogenetic trees by inserting placements into a reference
 
-            Parameters
-            ----------
-            fp_fragments : str
-                The path to a file containing a JSON dump of fragments
-                (assume path is in out_dir)
-            out_dir : str
-                The path to the job's output directory
+    Parameters
+    ----------
+    fp_placements : str
+        The path to a file containing a JSON dump of fragments
+        (json dump is of dictionary, where keys are the seqs,
+         values are the new placements as JSON strings)
+    out_dir : str
+        The path to the job's output directory
+    fp_reference_template : str, optional
+        The path to a file containing the reference placement file.
+        If None, it falls back to the Greengenes 13.8 99% reference.
+    fp_reference_rename : str, optional
+        Similar to fp_reference_template, but a filepath to the generated
+        python renaming script to undo the name scaping post guppy.
+        If None, it falls back to the Greengenes 13.8 99% reference.
 
-            Returns
-            -------
-            False, Error_Message if unsuccessful
-            True, file_path_to_result if successful
+    Returns
+    -------
+        True, The filepath of the phylogenetic insertion tree in Newick
+        format, if successful
+        False, Error message if unsuccessful, if files don't exist, guppy
+        doesn't return zero, etc.
     """
-    with open(fp_fragments) as fragments_file:
-        placements = json.load(fragments_file)
+    with open(fp_placements) as placements_file:
+        placements = json.load(placements_file)
 
         try:
-            fp_phylogeny = generate_insertion_trees(placements,
-                                                    out_dir,
-                                                    reference_template=None,
-                                                    reference_rename=None)
+            fp_phylogeny = generate_insertion_trees(
+                                    placements,
+                                    out_dir,
+                                    reference_template=fp_reference_template,
+                                    reference_rename=fp_reference_rename)
+
         except ValueError as e:
             return False, str(e)
 
