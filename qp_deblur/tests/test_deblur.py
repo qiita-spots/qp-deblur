@@ -435,6 +435,16 @@ class deblurTests_binaryfail(PluginTestCase):
         # saving current value of PATH
         self.oldpath = environ['PATH']
 
+    def tearDown(self):
+        # restore eventually changed PATH env var
+        environ['PATH'] = self.oldpath
+        for fp in self._clean_up_files:
+            if exists(fp):
+                if isdir(fp):
+                    rmtree(fp)
+                else:
+                    remove(fp)
+
     def test_deblur_failing_sepp(self):
         # generating filepaths
         fd, fp = mkstemp(suffix='_seqs.demux')
