@@ -6,16 +6,19 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 
+from qiita_client.testing import PluginTestCase
+
 from unittest import main
 from subprocess import Popen, PIPE
 
 from os import remove
 from shutil import rmtree
 from tempfile import mkdtemp
-from os.path import exists, isdir
+from os.path import exists, isdir, join
 from os import environ
-
-from qiita_client.testing import PluginTestCase
+import shutil
+from hashlib import md5
+from json import loads
 
 
 class TestCmdGenTree(PluginTestCase):
@@ -38,11 +41,18 @@ class TestCmdGenTree(PluginTestCase):
 
         archive_file = 'support_files/test_archive_file.json'
         ref_template_file = 'support_files/sepp/tmpl_tiny_placement.json'
+        fp_biom = 'support_files/otu_table.biom'
+
+        # since this cmd alters the target biom, create a copy to out_dir
+        fp_output_biom = join(out_dir, 'output_table.biom')
+        shutil.copyfile(fp_biom, fp_output_biom)
 
         p = Popen(["./scripts/generate_tree_from_fragments \
                     --fp_archive %s \
+                    --fp_biom %s \
                     --output_dir %s \
                     --fp_ref_template=%s" % (archive_file,
+                                             fp_output_biom,
                                              out_dir,
                                              ref_template_file)],
                   shell=True,
@@ -53,10 +63,25 @@ class TestCmdGenTree(PluginTestCase):
 
         # make sure cmd returns successfully (0)
         self.assertEqual(p.returncode, 0)
+
+        # convert JSON-based output back into a dictionary
+        p_out = loads(p_out)
+
         # make sure path to output file matches temporary directory
-        self.assertEqual(out_dir, p_out[:len(out_dir)])
+        self.assertEqual(out_dir, p_out['phylogeny'][:len(out_dir)])
+
         # make sure file is at least named with a .tre extension
-        self.assertEqual(p_out[-4:], '.tre')
+        self.assertEqual(p_out['phylogeny'][-4:], '.tre')
+
+        # given the known inputs, fp_output_biom should be heavily stripped,
+        # and no longer matching fp_biom.
+        with open(fp_biom, 'rb') as original_data:
+            checksum_original = md5(original_data.read()).hexdigest()
+
+        with open(p_out['biom'], 'rb') as output_data:
+            checksum_output = md5(output_data.read()).hexdigest()
+
+        self.assertNotEqual(checksum_original, checksum_output)
 
 
 if __name__ == '__main__':
