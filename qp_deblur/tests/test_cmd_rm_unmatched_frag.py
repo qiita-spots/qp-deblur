@@ -63,11 +63,9 @@ class TestCmdRemoveUnmatchedFragments(PluginTestCase):
         # and no longer matching fp_biom.
         with open(fp_biom, 'rb') as original_data:
             checksum_original = md5(original_data.read()).hexdigest()
-            print(checksum_original)
 
         with open(fp_output_biom, 'rb') as output_data:
             checksum_output = md5(output_data.read()).hexdigest()
-            print(checksum_output)
 
         self.assertNotEqual(checksum_original, checksum_output)
 
