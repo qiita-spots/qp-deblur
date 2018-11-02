@@ -22,11 +22,8 @@ class TestCmdGenTree(PluginTestCase):
     def setUp(self):
         self._clean_up_files = []
         self.oldpath = environ['PATH']
-        print("SPINNING UP")
 
     def tearDown(self):
-        # restore eventually ch
-        print("TEARING DOWN")
         environ['PATH'] = self.oldpath
         for fp in self._clean_up_files:
             if exists(fp):

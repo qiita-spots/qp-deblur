@@ -29,7 +29,7 @@ def execute(fp_archive, output_dir, fp_ref_template, fp_ref_rename):
                                     fp_reference_rename=fp_ref_rename)
 
     if status:
-        print(message)  # message will be fp of output tree
+        print("%s" % message)  # message will be fp of output tree
         # if successful, script will automatically return status code 0.
     else:
         # message will be exception string
