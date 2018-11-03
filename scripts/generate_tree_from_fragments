@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+# -----------------------------------------------------------------------------
+# Copyright (c) 2014--, The Qiita Development Team.
+#
+# Distributed under the terms of the BSD 3-clause License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+# -----------------------------------------------------------------------------
+
+import click
+
+from qp_deblur.deblur import generate_tree_from_fragments
+from json import dumps
+
+
+@click.command()
+@click.option('--fp_archive', required=True, type=str)
+@click.option('--fp_biom', required=True, type=str)
+@click.option('--output_dir', required=True, type=str)
+@click.option('--fp_ref_template', required=False, type=str)
+@click.option('--fp_ref_rename', required=False, type=str)
+# execute needed to support click
+def execute(fp_archive, fp_biom, output_dir, fp_ref_template, fp_ref_rename):
+    """Generates a phylogenetic tree by inserting placements into a reference,
+       and trims observations in BIOMs to those successfully matched to the
+       tree."""
+
+    try:
+        # if successful, script will automatically return status code 0.
+        new_phylogeny, new_biom = generate_tree_from_fragments(
+                                    fp_archive,
+                                    fp_biom,
+                                    output_dir,
+                                    fp_reference_template=fp_ref_template,
+                                    fp_reference_rename=fp_ref_rename)
+
+        # dump fp of successful results as JSON
+        print("%s" % dumps({'phylogeny': new_phylogeny, 'biom': new_biom}))
+    except (IOError, ValueError) as e:
+        print("Error: %s" % str(e))
+        # ensure that script returns status code 1, if an error occured.
+        exit(1)
+
+
+if __name__ == '__main__':
+    execute()
