@@ -569,6 +569,9 @@ def generate_tree_from_fragments(fp_placements,
                                     reference_template=fp_reference_template,
                                     reference_rename=fp_reference_rename)
         except Exception:
+            # we can get an exception if the tree can't be build; there are
+            # many reasons for this but perhaps the most important is a
+            # different target region.
             fp_phylogeny = None
             fp_biom_out = None
 

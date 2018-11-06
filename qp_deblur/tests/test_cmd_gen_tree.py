@@ -68,10 +68,10 @@ class TestCmdGenTree(PluginTestCase):
         p_out = loads(p_out)
 
         # make sure path to output file matches temporary directory
-        self.assertEqual(out_dir, p_out['phylogeny'][:len(out_dir)])
+        self.assertEqual(out_dir, p_out['archive'][:len(out_dir)])
 
         # make sure file is at least named with a .tre extension
-        self.assertEqual(p_out['phylogeny'][-4:], '.tre')
+        self.assertEqual(p_out['archive'][-4:], '.tre')
 
         # given the known inputs, fp_output_biom should be heavily stripped,
         # and no longer matching fp_biom.
