@@ -36,7 +36,7 @@ def execute(fp_archive, fp_biom, output_dir, fp_ref_template, fp_ref_rename):
                                     fp_reference_rename=fp_ref_rename)
 
         # dump fp of successful results as JSON
-        print("%s" % dumps({'phylogeny': new_phylogeny, 'biom': new_biom}))
+        print("%s" % dumps({'archive': new_phylogeny, 'biom': new_biom}))
     except (IOError, ValueError) as e:
         print("Error: %s" % str(e))
         # ensure that script returns status code 1, if an error occured.

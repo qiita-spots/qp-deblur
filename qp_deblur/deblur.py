@@ -562,11 +562,14 @@ def generate_tree_from_fragments(fp_placements,
     with open(fp_placements) as placements_file:
         placements = json.load(placements_file)
 
-        fp_phylogeny = generate_insertion_trees(
+        try:
+            fp_phylogeny = generate_insertion_trees(
                                     placements,
                                     out_dir,
                                     reference_template=fp_reference_template,
                                     reference_rename=fp_reference_rename)
+        except Exception:
+            fp_phylogeny = None
 
         # trim BIOM file to match newly-generated tree
 
