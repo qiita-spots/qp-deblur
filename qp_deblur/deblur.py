@@ -331,6 +331,7 @@ def generate_insertion_trees(placements, out_dir,
 
     return file_tree
 
+
 def deblur(qclient, job_id, parameters, out_dir):
     """Run deblur with the given parameters
 
