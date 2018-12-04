@@ -4,7 +4,7 @@ import sys
 import json
 
 
-with open('revnamemap.json') as f:
+with open('support_files/sepp/revnamemap.json') as f:
     revnamemap = json.load(f)
 
 
