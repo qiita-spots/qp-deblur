@@ -47,7 +47,7 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     Parameters
     ----------
     preprocessed_fp : list of str
-        A list of 1 element with the input fastq or per sample folder
+        A list of one element with the input fastq or per-sample folder
     out_dir : str
         The job output directory
     parameters : dict
@@ -82,7 +82,7 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
 
 def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
                              reference_alignment=None):
-    """Generates the sepp commands
+    """Generates the SEPP commands
 
     Parameters
     ----------
@@ -94,10 +94,10 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         Number if CPU cores to use
     reference_phylogeny : str, optional
         A filepath to an alternative reference phylogeny for SEPP.
-        If None, default phylogeny is uses, which is Greengenes 13.8 99% id.
+        If None, default phylogeny (Greengenes 13.8 99% id) is used.
     reference_alignment : str, optional
         A filepath to an alternative reference alignment for SEPP.
-        If None, default alignment is uses, which is Greengenes 13.8 99% id.
+        If None, default alignment (Greengenes 13.8 99% id) is used.
 
     Returns
     -------
@@ -149,7 +149,7 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         # Therefore, we can only assume that something went wrong by not
         # observing the expected output file.
         # If the main SEPP program fails, it reports some information in two
-        # files, whoes content we can read and report
+        # files, the content of which we can read and report
         file_stderr = '%s/sepp-%s-err.log' % (out_dir, run_name)
         if exists(file_stderr):
             with open(file_stderr, 'r') as fh_stderr:
@@ -193,7 +193,7 @@ def _generate_template_rename(file_reference_phylogeny,
     -----
     This function only needs to be called once per reference phylogeny/
     alignment, i.e. if we update Greengenes or extend SEPP for Silva or other
-    reference phylogenies. I am including this function for easier maintainance
+    reference phylogenies. I am including this function for easier maintenance
     in the future.
     """
     if not exists(out_dir):
