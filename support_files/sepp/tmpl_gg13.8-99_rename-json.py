@@ -1,9 +1,11 @@
-import ast
 import re
 import string
 import sys
+from json import load
 
-revnamemap = ast.literal_eval()
+
+with open('support_files/sepp/tmpl_gg13.8-99-revnamemap.json') as f:
+    revnamemap = load(f)
 
 
 def relabel_newick(newick_string):

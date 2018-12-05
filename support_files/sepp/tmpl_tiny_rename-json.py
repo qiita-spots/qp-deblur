@@ -1,11 +1,11 @@
 import re
 import string
 import sys
-import json
+from json import load
 
 
-with open('support_files/sepp/revnamemap.json') as f:
-    revnamemap = json.load(f)
+with open('support_files/sepp/tmpl_tiny-revnamemap.json') as f:
+    revnamemap = load(f)
 
 
 def relabel_newick(newick_string):
