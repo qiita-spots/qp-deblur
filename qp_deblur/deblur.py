@@ -575,7 +575,7 @@ def generate_tree_from_fragments(fp_placements,
             fp_phylogeny = None
             fp_biom_out = None
 
-        if fp_phylogeny is not None:
+        if fp_biom is not None and fp_phylogeny is not None:
             # read tree
             tree = TreeNode.read(str(fp_phylogeny))
             fragments_tree = {str(tip.name) for tip in tree.tips()
