@@ -16,7 +16,7 @@ from json import dumps
 
 @click.command()
 @click.option('--fp_archive', required=True, type=str)
-@click.option('--fp_biom', required=True, type=str)
+@click.option('--fp_biom', required=False, default=None, type=str)
 @click.option('--output_dir', required=True, type=str)
 @click.option('--fp_ref_template', required=False, type=str)
 @click.option('--fp_ref_rename', required=False, type=str)

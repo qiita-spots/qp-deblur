@@ -44,7 +44,7 @@ script:
   - nosetests --with-doctest --with-coverage --cover-package=qp_deblur
   - flake8 qp_deblur setup.py scripts support_files/patches/*.py support_files/sepp/*.py
 addons:
-  postgresql: "9.3"
+  postgresql: "9.5"
 services:
   - redis-server
   - postgresql
