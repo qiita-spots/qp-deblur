@@ -2,9 +2,12 @@ import re
 import string
 import sys
 from json import load
+from os.path import join
+
+from qp_deblur import get_data
 
 
-with open('support_files/sepp/tmpl_tiny-revnamemap.json') as f:
+with open(get_data(join('sepp', 'tmpl_tiny-revnamemap.json'))) as f:
     revnamemap = load(f)
 
 
