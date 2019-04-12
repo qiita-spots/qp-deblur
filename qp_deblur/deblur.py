@@ -14,6 +14,7 @@ from functools import partial
 from collections import OrderedDict
 import json
 from skbio import TreeNode
+import pandas as pd
 
 from biom import Table, load_table
 from biom.util import biom_open
@@ -367,6 +368,21 @@ def deblur(qclient, job_id, parameters, out_dir):
     # Get the artifact filepath information
     artifact_info = qclient.get("/qiita_db/artifacts/%s/" % artifact_id)
     fps = artifact_info['files']
+
+    # Getting preparation information
+    prep_info = qclient.get(
+        '/qiita_db/prep_template/%s/' % artifact_info['prep_information'][0])
+    df = pd.read_csv(prep_info['prep-file'], sep='\t')
+    if 'platform' not in [x.lower() for x in df.columns]:
+        error_msg = ('Preparation Information File does not have a platform '
+                     'column, which is requiered')
+        return False, None, error_msg
+    platform = [x.lower() for x in df.platform.unique()]
+    if platform != ['illumina']:
+        error_msg = ('deblur is only valid for Illumina `platform`, current '
+                     'values in the Preparation Information File: %s' %
+                     ', '.join(platform))
+        return False, None, error_msg
 
     # Step 2 generating command deblur
     if 'preprocessed_demux' in fps:

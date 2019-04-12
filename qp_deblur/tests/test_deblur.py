@@ -26,7 +26,7 @@ class deblurTests(PluginTestCase):
         # this will allow us to see the full errors
         self.maxDiff = None
 
-        plugin("https://localhost:21174", 'register', 'ignored')
+        plugin("https://localhost:8383", 'register', 'ignored')
         self.params = {
             'Positive filtering database': 'default',
             'Negative filtering database': 'default',
@@ -415,7 +415,7 @@ class deblurTests_binaryfail(PluginTestCase):
         # this will allow us to see the full errors
         self.maxDiff = None
 
-        plugin("https://localhost:21174", 'register', 'ignored')
+        plugin("https://localhost:8383", 'register', 'ignored')
         self.params = {
             'Positive filtering database': 'default',
             'Negative filtering database': 'default',

@@ -47,9 +47,10 @@ setup(name='qp-deblur',
       scripts=['scripts/configure_deblur', 'scripts/start_deblur',
                'scripts/generate_tree_from_fragments'],
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
-      install_requires=['click >= 3.3', 'future', 'deblur>=1.1.0'],
-      dependency_links=[
-          ('https://github.com/qiita-spots/qiita-files/archive/master.zip#'
-           'egg=qiita-files-0.1.0-dev')],
+      install_requires=['click', 'scikit-bio', 'pandas', 'future',
+                        'deblur>=1.1.0', 'qiita-files @ https://github.com/'
+                        'qiita-spots/qiita-files/archive/master.zip',
+                        'qiita_client @ https://github.com/qiita-spots/'
+                        'qiita_client/archive/master.zip'],
       classifiers=classifiers,
       )
