@@ -375,7 +375,7 @@ def deblur(qclient, job_id, parameters, out_dir):
     df = pd.read_csv(prep_info['prep-file'], sep='\t')
     if 'platform' not in [x.lower() for x in df.columns]:
         error_msg = ('Preparation Information File does not have a platform '
-                     'column, which is requiered')
+                     'column, which is required')
         return False, None, error_msg
     if [x.lower() for x in df.platform.unique()] != ['illumina']:
         error_msg = ('deblur is only valid for Illumina `platform`, current '

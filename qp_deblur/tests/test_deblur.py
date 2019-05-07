@@ -218,7 +218,7 @@ class deblurTests(PluginTestCase):
         self._clean_up_files.append(out_dir)
         success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
         self.assertEqual('Preparation Information File does not have a '
-                         'platform column, which is requiered', msg)
+                         'platform column, which is required', msg)
         self.assertFalse(success)
 
     def test_deblur(self):
