@@ -26,7 +26,7 @@ class deblurTests(PluginTestCase):
         # this will allow us to see the full errors
         self.maxDiff = None
 
-        plugin("https://localhost:21174", 'register', 'ignored')
+        plugin("https://localhost:8383", 'register', 'ignored')
         self.params = {
             'Positive filtering database': 'default',
             'Negative filtering database': 'default',
@@ -82,8 +82,10 @@ class deblurTests(PluginTestCase):
 
         # inserting new prep template
         prep_info_dict = {
-            'SKB7.640196': {'description_prep': 'SKB7'},
-            'SKB8.640193': {'description_prep': 'SKB8'}
+            'SKB7.640196': {
+                'description_prep': 'SKB7', 'platform': 'Illumina'},
+            'SKB8.640193': {
+                'description_prep': 'SKB8', 'platform': 'Illumina'}
         }
         data = {'prep_info': dumps(prep_info_dict),
                 # magic #1 = testing study

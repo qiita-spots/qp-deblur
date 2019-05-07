@@ -30,4 +30,4 @@ def relabel_newick(newick_string):
 
 
 for l in sys.stdin.readlines():
-        sys.stdout.write(relabel_newick(l))
+    sys.stdout.write(relabel_newick(l))
