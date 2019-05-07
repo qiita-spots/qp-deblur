@@ -377,11 +377,10 @@ def deblur(qclient, job_id, parameters, out_dir):
         error_msg = ('Preparation Information File does not have a platform '
                      'column, which is requiered')
         return False, None, error_msg
-    platform = [x.lower() for x in df.platform.unique()]
-    if platform != ['illumina']:
+    if [x.lower() for x in df.platform.unique()] != ['illumina']:
         error_msg = ('deblur is only valid for Illumina `platform`, current '
                      'values in the Preparation Information File: %s' %
-                     ', '.join(platform))
+                     ', '.join(sorted(df.platform.unique())))
         return False, None, error_msg
 
     # Step 2 generating command deblur
