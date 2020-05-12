@@ -86,6 +86,51 @@ class deblurTests(PluginTestCase):
 
         self.assertEqual(obs, exp)
 
+    def test_deblur_no_target_gene(self):
+        # generating filepaths
+        fd, fp = mkstemp(suffix='_seqs.demux')
+        close(fd)
+        self._clean_up_files.append(fp)
+        copyfile('support_files/no_sepp_seqs.demux', fp)
+        prep_info_dict = {
+            'SKB7.640196': {
+                'description_prep': 'SKB7', 'platform': 'Illumina'},
+            'SKB8.640193': {
+                'description_prep': 'SKB8', 'platform': 'Illumina'}
+        }
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': 'Metagenomic'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        data = {
+            'filepaths': dumps([(fp, 'preprocessed_fastq')]),
+            'type': "Demultiplexed",
+            'name': "New demultiplexed artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['Demultiplexed sequences'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        # pre-populate archive with fragment placements
+        self.qclient.patch(url="/qiita_db/archive/observations/",
+                           op="add", path=jid,
+                           value=dumps(self.features))
+        success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
+        self.assertEqual('deblur was developed only for target gene data', msg)
+        self.assertFalse(success)
+
     def test_deblur_no_tree(self):
         # generating filepaths
         fd, fp = mkstemp(suffix='_seqs.demux')
