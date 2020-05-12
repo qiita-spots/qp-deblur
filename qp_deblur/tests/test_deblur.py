@@ -128,7 +128,8 @@ class deblurTests(PluginTestCase):
                            op="add", path=jid,
                            value=dumps(self.features))
         success, ainfo, msg = deblur(self.qclient, jid, self.params, out_dir)
-        self.assertEqual('deblur was developed only for target gene data', msg)
+        self.assertEqual(
+            'deblur was developed only for amplicon sequencing data', msg)
         self.assertFalse(success)
 
     def test_deblur_no_tree(self):

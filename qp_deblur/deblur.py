@@ -374,7 +374,7 @@ def deblur(qclient, job_id, parameters, out_dir):
         '/qiita_db/prep_template/%s/' % artifact_info['prep_information'][0])
     df = pd.read_csv(prep_info['prep-file'], sep='\t')
     if prep_info['data_type'] not in {'16S', '18S', 'ITS'}:
-        error_msg = ('deblur was developed only for target gene data')
+        error_msg = ('deblur was developed only for amplicon sequencing data')
         return False, None, error_msg
     if 'platform' not in [x.lower() for x in df.columns]:
         error_msg = ('Preparation Information File does not have a platform '
