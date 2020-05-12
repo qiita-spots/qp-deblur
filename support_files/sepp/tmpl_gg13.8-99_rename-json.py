@@ -31,5 +31,5 @@ def relabel_newick(newick_string):
     return t
 
 
-for l in sys.stdin.readlines():
-    sys.stdout.write(relabel_newick(l))
+for line in sys.stdin.readlines():
+    sys.stdout.write(relabel_newick(line))
