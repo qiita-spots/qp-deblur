@@ -42,7 +42,6 @@ before_script:
   - cat /tmp/supervisord.log
 script:
   - source activate deblur-1.1.0
-  - start_deblur "https://localhost:8383" register ignored
   - nosetests --with-doctest --with-coverage --cover-package=qp_deblur
   - flake8 qp_deblur setup.py scripts support_files/patches/*.py support_files/sepp/*.py
 addons:
