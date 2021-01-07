@@ -143,7 +143,9 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     if exists(file_placements):
         with open(file_placements, 'r') as fh_placements:
             plcmnts = json.loads(fh_placements.read())
-            return {p['nm'][0][0]: p['p'] for p in plcmnts['placements']}
+            return {seqlbl[0]: p['p']
+                    for p in plcmnts['placements']
+                    for seqlbl in p['nm']}
     else:
         # due to the wrapper style of run-sepp.sh the actual exit code is never
         # returned and we have no way of finding out which sub-command failed
