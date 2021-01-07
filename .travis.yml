@@ -29,7 +29,7 @@ install:
   - conda create --quiet --yes -n deblur-1.1.0 python=3.5 pip
   - source activate deblur-1.1.0
   - export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/server.crt
-  - conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion numpy cython
+  - conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion numpy==1.13.0 cython
   - pip install -U pip
   - pip install coveralls flake8
   - travis_retry pip install .
