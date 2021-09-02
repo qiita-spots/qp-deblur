@@ -115,7 +115,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -161,7 +161,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -214,7 +214,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -255,7 +255,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -298,7 +298,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -353,7 +353,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -424,7 +424,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -474,7 +474,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -528,7 +528,7 @@ class deblurTests(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']
@@ -615,7 +615,7 @@ class deblurTests_binaryfail(PluginTestCase):
         self.params['Demultiplexed sequences'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['deblur', '1.1.0', 'Deblur']),
+                'command': dumps(['deblur', '2021.09', 'Deblur']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         jid = self.qclient.post('/apitest/processing_job/', data=data)['job']

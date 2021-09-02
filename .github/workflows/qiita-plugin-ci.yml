@@ -77,7 +77,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda create --quiet --yes -n deblur python=3.5 pip
-          source activate deblur
+          conda activate deblur
           conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion numpy==1.13.0 cython
 
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
@@ -90,13 +90,6 @@ jobs:
 
           echo "Available Qiita plugins"
           ls ~/.qiita_plugins/
-
-      - name: Install QIIME 2 plugins
-        shell: bash -l {0}
-        run: |
-          conda activate qiime2
-          pip install q2-umap
-          qiime
 
       - name: Starting Main Services
         shell: bash -l {0}

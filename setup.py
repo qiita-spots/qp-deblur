@@ -10,7 +10,7 @@
 
 from setuptools import setup
 
-__version__ = "1.1.0"
+__version__ = "2021.09"
 
 classes = """
     Development Status :: 3 - Alpha
