@@ -26,14 +26,14 @@ install:
   - qiita-env make --no-load-ontologies
   - source deactivate
   # installing this plugin
-  - conda create --quiet --yes -n deblur-1.1.0 python=3.5 pip
-  - source activate deblur-1.1.0
+  - conda create --quiet --yes -n deblur python=3.5 pip
+  - source activate deblur
   - export QIITA_SERVER_CERT=$HOME/miniconda3/envs/qiita/lib/python3.6/site-packages/qiita_core/support_files/server.crt
   - conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion numpy==1.13.0 cython
   - pip install -U pip
   - pip install coveralls flake8
   - travis_retry pip install .
-  - configure_deblur --env-script "source activate deblur-1.1.0" --server-cert $QIITA_SERVER_CERT
+  - configure_deblur --env-script "source activate deblur" --server-cert $QIITA_SERVER_CERT
 before_script:
   - source activate qiita
   - qiita plugins update
@@ -41,7 +41,7 @@ before_script:
   - sleep 10 # give enough time to the webserver to start
   - cat /tmp/supervisord.log
 script:
-  - source activate deblur-1.1.0
+  - source activate deblur
   - nosetests --with-doctest --with-coverage --cover-package=qp_deblur
   - flake8 qp_deblur setup.py scripts support_files/patches/*.py support_files/sepp/*.py
 addons:
