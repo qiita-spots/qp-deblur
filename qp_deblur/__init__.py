@@ -72,7 +72,7 @@ dflt_param_set = {
                  'Reference phylogeny for SEPP': 'Greengenes_13.8'}
 }
 deblur_cmd = QiitaCommand(
-    "Deblur", "deblurring workflow", deblur, req_params, opt_params,
+    "Deblur 2021.09", "deblurring workflow", deblur, req_params, opt_params,
     outputs, dflt_param_set)
 plugin.register_command(deblur_cmd)
 
