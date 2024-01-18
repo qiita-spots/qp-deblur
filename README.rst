@@ -1,5 +1,5 @@
 Deblur Qiita Plugin
-===================
+====================
 
 |Build Status| |Coverage Status|
 
