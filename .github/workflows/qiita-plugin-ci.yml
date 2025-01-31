@@ -79,7 +79,7 @@ jobs:
         run: |
           conda create --quiet --yes -n deblur python=3.5 pip libgfortran=3
           conda activate deblur
-          conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion
+          conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion gcc
           conda install --quiet --yes -c conda-forge -c bioconda scikit-bio==0.5.5 pandas
           
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
