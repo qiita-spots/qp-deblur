@@ -13,7 +13,7 @@ jobs:
     services:
       postgres:
         # Docker Hub image
-        image: postgres:9.5
+        image: postgres:13.4
         env:
           POSTGRES_DB: postgres
           POSTGRES_USER: postgres
@@ -62,16 +62,14 @@ jobs:
 
           # Setting up main qiita conda environment
           conda config --add channels conda-forge
-          conda create -q --yes -n qiita python=3.6 pip libgfortran numpy nginx cython redis
+          conda create -q --yes -n qiita python=3.9 libgfortran numpy nginx cython redis
           conda activate qiita
-          pip install 'setuptools<=58.0.1'
-          pip install sphinx sphinx-bootstrap-theme nose-timer codecov Click
 
       - name: Qiita install
         shell: bash -l {0}
         run: |
           conda activate qiita
-          pip install qiita-dev/ --no-binary redbiom
+          pip --quiet install qiita-dev/ --no-binary redbiom
           mkdir ~/.qiita_plugins
 
       - name: Install Qiita plugins
@@ -82,8 +80,6 @@ jobs:
           conda install --quiet --yes -c bioconda -c biocore "VSEARCH=2.7.0" MAFFT=7.310 SortMeRNA=2.0 fragment-insertion gcc
           conda install --quiet --yes -c conda-forge -c bioconda scikit-bio==0.5.5 pandas
           
-          export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
-          export QIITA_CONFIG_FP=`pwd`/qiita-dev/qiita_core/support_files/config_test_local.cfg
           pip --quiet install -U pip
           pip install -U numpy cython deblur
           pip --quiet install .
@@ -91,6 +87,9 @@ jobs:
           sed -i "s/f'Entered BaseQiitaPlugin._register_command({command.name})'/'Entered BaseQiitaPlugin._register_command(%s)' % command.name/"  $CONDA_PREFIX/lib/python3.5/site-packages/qiita_client/plugin.py
           pip --quiet install coveralls
 
+	  export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
+          export QIITA_CONFIG_FP=`pwd`/qiita-dev/qiita_core/support_files/config_test_local.cfg
+          
           configure_deblur --env-script "source /home/runner/.profile; conda activate deblur" --server-cert $QIITA_SERVER_CERT
 
           echo "Available Qiita plugins"
