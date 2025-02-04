@@ -86,9 +86,9 @@ jobs:
           export QIITA_CONFIG_FP=`pwd`/qiita-dev/qiita_core/support_files/config_test_local.cfg
           pip --quiet install -U pip
           pip install -U numpy cython deblur
+          pip --quiet install .
           find / -name "plugin.py" 2> /dev/null && true
           sed -i "s/f'Entered BaseQiitaPlugin._register_command({command.name})'/'Entered BaseQiitaPlugin._register_command(%s)' % command.name/"  $CONDA_PREFIX/lib/python3.5/site-packages/qiita_client/plugin.py
-          pip --quiet install .
           pip --quiet install coveralls
 
           configure_deblur --env-script "source /home/runner/.profile; conda activate deblur" --server-cert $QIITA_SERVER_CERT
