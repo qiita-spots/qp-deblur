@@ -16,7 +16,8 @@ from tempfile import mkdtemp
 
 from qp_deblur.deblur import (generate_sepp_placements,
                               generate_insertion_trees,
-                              _generate_template_rename)
+                              _generate_template_rename,
+                              _reorder_fields)
 
 
 TESTPREFIX = 'foo'
@@ -295,6 +296,43 @@ class seppTests(TestCase):
             out_dir)
 
         rmtree(out_dir)
+
+
+class pplacerReorderTests(TestCase):
+    jplace = {
+        "tree": "",
+        "placements": [{
+            "p": [[351337, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515],
+                  [351341, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515],
+                  [348440, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515],
+                  [351336, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515],
+                  [351353, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515],
+                  [351354, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515],
+                  [351302, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515]
+                 ],
+            "nm": [["TGG...", 1]]}],
+        "metadata": {
+            "invocation": "SEPP-generated json file (sepp 2)."
+        },
+        "version": 1,
+        "fields": ["edge_num", "likelihood", "like_weight_ratio",
+                   "distal_length", "pendant_length"]}
+
+    # keep the very same order
+    obs = _reorder_fields(jplace['placements'], jplace['fields'],
+        EXP_ORDER_FIELDS=[
+            'edge_num', 'likelihood', 'like_weight_ratio', 'distal_length',
+            'pendant_length'])
+    self.assertEqual(obs[0],
+        [351337, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515])
+
+    # flip edge_num with pedant_length
+    obs = _reorder_fields(jplace['placements'], jplace['fields'],
+        EXP_ORDER_FIELDS=[
+            'pendant_length', 'likelihood', 'like_weight_ratio',
+            'distal_length', 'edge_num'])
+    self.assertEqual(obs[0],
+        [0.000006113515, -24653.717, 0.14285715, 5.000002E-7, 351337])
 
 
 if __name__ == '__main__':
