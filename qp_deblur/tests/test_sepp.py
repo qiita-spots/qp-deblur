@@ -326,7 +326,7 @@ class pplacerReorderTests(TestCase):
                        "distal_length", "pendant_length"]}
 
         # keep the very same order
-        obs = _reorder_fields(jplace['placements'], jplace['fields'],
+        obs = _reorder_fields(jplace['placements'][0]['p'], jplace['fields'],
                               EXP_ORDER_FIELDS=['edge_num', 'likelihood',
                                                 'like_weight_ratio',
                                                 'distal_length',
@@ -335,7 +335,7 @@ class pplacerReorderTests(TestCase):
                                   0.000006113515])
 
         # flip edge_num with pedant_length
-        obs = _reorder_fields(jplace['placements'], jplace['fields'],
+        obs = _reorder_fields(jplace['placements'][0]['p'], jplace['fields'],
                               EXP_ORDER_FIELDS=['pendant_length', 'likelihood',
                                                 'like_weight_ratio',
                                                 'distal_length', 'edge_num'])
