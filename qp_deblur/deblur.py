@@ -81,6 +81,58 @@ def generate_deblur_workflow_commands(preprocessed_fp, out_dir, parameters):
     return cmd
 
 
+def _reorder_fields(plcmnt, obs_order_fields, EXP_ORDER_FIELDS=[
+        'edge_num', 'likelihood', 'like_weight_ratio', 'distal_length',
+        'pendant_length']):
+    """Re-orders field information in all lines for a list of placements.
+
+    Parameters
+    ----------
+    plcmnt : [[float]]
+        The original placement as a list of lists (=lines) with multiple
+        fields.
+    obs_order_fields : [str]
+        The current order of placement field information.
+    EXP_ORDER_FIELDS : [str]
+        Desired order placement field information.
+
+    Returns
+    -------
+    Reordered placement: [[float]]
+
+    Notes
+    -----
+    We started to store placements in qiita produced by SEPP, which
+    internally used pplacer.
+    The SEPP-bundled binary of pplacer is version v1.1.alpha13-0-g1ec7786
+    and returns placements in the EXP_ORDER_FIELDS order. Later versions,
+    specifically v1.1.alpha17 produces a different field order for
+    placements! We therefore cannot combine raw placements of these
+    different versions. Therefore, we here ensure that field order of
+    placements strictly adhers to what we expect.
+
+    A placement (plcmnt) is composed of a set of
+    potential placement positions (line) and every line
+    is composed of multiple fields. For example
+    [[-24653.717, 351337, 0.14285715, 5.000002e-07, 6.113515e-06],
+    [-24653.717, 351341, 0.14285715, 5.000002e-07, 6.113515e-06],
+    [-24653.717, 348440, 0.14285715, 5.000002e-07, 6.113515e-06],
+    [-24653.717, 351336, 0.14285715, 5.000002e-07, 6.113515e-06],
+    [-24653.717, 351353, 0.14285715, 5.000002e-07, 6.113515e-06],
+    [-24653.717, 351354, 0.14285715, 5.000002e-07, 6.113515e-06],
+    [-24653.717, 351302, 0.14285715, 5.000002e-07, 6.113515e-06]]
+    We iterate through all lines and re-order the fields by
+      a) iterating over the current index of the field: i
+      b) asking which position the current index i shall have in the
+         desired field order: EXP_ORDER_FIELDS
+      c) obtaining the index of the actual index
+      d) grep the field at this latter position
+    """
+    return [[line[obs_order_fields.index(EXP_ORDER_FIELDS[i])]
+             for i in range(len(line))]
+            for line in plcmnt]
+
+
 def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
                              reference_alignment=None):
     """Generates the SEPP commands
@@ -143,7 +195,8 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
     if exists(file_placements):
         with open(file_placements, 'r') as fh_placements:
             plcmnts = json.loads(fh_placements.read())
-            return {seqlbl[0]: p['p']
+            obs_order_fields = plcmnts['fields']
+            return {seqlbl[0]: _reorder_fields(p['p'], obs_order_fields)
                     for p in plcmnts['placements']
                     for seqlbl in p['nm']}
     else:
