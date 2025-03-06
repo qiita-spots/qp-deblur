@@ -196,7 +196,7 @@ def generate_sepp_placements(seqs, out_dir, threads, reference_phylogeny=None,
         with open(file_placements, 'r') as fh_placements:
             plcmnts = json.loads(fh_placements.read())
             obs_order_fields = plcmnts['fields']
-            result = {seqlbl[0]: _reorder_fields(p['p'], obs_order_fields)
+            return {seqlbl[0]: _reorder_fields(p['p'], obs_order_fields)
                     for p in plcmnts['placements']
                     for seqlbl in p['nm']}
     else:
