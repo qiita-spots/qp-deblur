@@ -89,7 +89,8 @@ def _reorder_fields(plcmnt, obs_order_fields, EXP_ORDER_FIELDS=[
     Parameters
     ----------
     plcmnt : [[float]]
-        The original placement as a list of lists (=lines) with multiple fields.
+        The original placement as a list of lists (=lines) with multiple
+        fields.
     obs_order_fields : [str]
         The current order of placement field information.
     EXP_ORDER_FIELDS : [str]
