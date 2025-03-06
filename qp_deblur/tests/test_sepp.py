@@ -327,17 +327,18 @@ class pplacerReorderTests(TestCase):
 
         # keep the very same order
         obs = _reorder_fields(jplace['placements'], jplace['fields'],
-            EXP_ORDER_FIELDS=[
-                'edge_num', 'likelihood', 'like_weight_ratio', 'distal_length',
-                'pendant_length'])
+                              EXP_ORDER_FIELDS=['edge_num', 'likelihood',
+                                                'like_weight_ratio',
+                                                'distal_length',
+                                                'pendant_length'])
         self.assertEqual(obs[0],
             [351337, -24653.717, 0.14285715, 5.000002E-7, 0.000006113515])
 
         # flip edge_num with pedant_length
         obs = _reorder_fields(jplace['placements'], jplace['fields'],
-            EXP_ORDER_FIELDS=[
-                'pendant_length', 'likelihood', 'like_weight_ratio',
-                'distal_length', 'edge_num'])
+                              EXP_ORDER_FIELDS=['pendant_length', 'likelihood',
+                                                'like_weight_ratio',
+                                                'distal_length', 'edge_num'])
         self.assertEqual(obs[0],
             [0.000006113515, -24653.717, 0.14285715, 5.000002E-7, 351337])
 
